@@ -1,0 +1,77 @@
+.content {
+  padding: 0 1rem;
+}
+
+#board-name {
+  background: var(--primary-color);
+  color: whitesmoke;
+  height: 40px;
+  font-size: 25px;
+  border: none;
+  padding: 1rem 0;
+  outline: none;
+  font-weight: 500;
+  margin: 0.5rem 0;
+}
+
+.search-area {
+  display: flex;
+  min-width: 300px;
+  background: var(--secondary-color);
+  width: fit-content;
+  border-radius: 5px;
+  justify-content: space-between;
+  margin: 0.5rem 0;
+}
+
+.search-area input {
+  background: var(--secondary-color);
+  color: whitesmoke;
+  font-size: medium;
+  border: none;
+  padding: 1rem 0;
+  outline: none;
+  font-weight: 500;
+  margin-left: 1rem;
+  line-height: 2px;
+  flex-grow: 1;
+}
+
+.search-area input::placeholder {
+  color: whitesmoke;
+}
+
+.search-area .MuiIconButton-root {
+  margin-left: 35px;
+}
+
+.main-body {
+  display: flex;
+  justify-content: space-between;
+  margin: 1rem 0;
+  gap: 3rem;
+  width: 100%;
+}
+
+.field {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background: var(--primary-color);
+  overflow: hidden;
+}
+
+.field-header {
+  background: var(--secondary-color);
+  display: flex;
+  justify-content: space-between;
+  border-radius: 20px;
+  height: 52px;
+  align-items: center;
+  border: 20px;
+}
+
+.field-header h3 {
+  margin-left: 1rem;
+  color: var(--tertiary-color);
+}

@@ -1,9 +1,3 @@
-:root {
-  --primary-color: #101218;
-  --secondary-color: #222831;
-  --tertiary-color: #00ADB5;
-}
-
 .header {
   display: flex;
   flex-direction: row;
