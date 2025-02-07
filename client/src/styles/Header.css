@@ -1,0 +1,42 @@
+:root {
+  --primary-color: #101218;
+  --secondary-color: #222831;
+  --tertiary-color: #00ADB5;
+}
+
+.header {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  color: var(--tertiary-color);
+  height: 4vh;
+  min-height: 60px;
+  border-bottom: 3px solid;
+}
+
+.header-l {
+  display: flex;
+  margin-left: 0.5rem;
+  gap: 15px;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.header-l a {
+  text-decoration: unset;
+  color: var(--tertiary-color);
+}
+
+.header-l button {
+  all: unset;
+  cursor: pointer;
+}
+
+.header-l button:hover {
+  transform: scale(1.1);
+}
+
+.header-r #profile {
+  height: 50px;
+  width: 50px;
+}
