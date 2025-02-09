@@ -1,49 +1,68 @@
 import React, { useState } from "react";
-import { Modal, Box, Button, TextField } from "@mui/material";
+import { Modal, Box, Button, TextField, IconButton } from "@mui/material";
+import CancelIcon from "@mui/icons-material/Cancel"
 
 export default function AddTask({ open, onClose, addTask }) {
   const [taskText, setTaskText] = useState("");
+  const [count, setCount] = useState(taskText.length)
+  const MAX_CHARS = 256;
+
+  const handleUpdate = (e) => {
+    const newText = e.target.value;
+    if (newText.length > MAX_CHARS) return;
+
+    setTaskText(newText);
+    setCount(newText.length);
+  };
 
   const save = () => {
     if (taskText.trim() === "") return; // Prevent empty tasks
     addTask(taskText); // Pass task to parent
     setTaskText(""); // Clear input after saving
+    setCount(0);
     onClose(); // Close modal
   };
 
   return (
-    <Modal open={open} onClose={onClose} aria-labelledby="modal-title">
-      <Box
-        sx={{
-          p: 3,
-          bgcolor: "white",
-          width: 300,
-          margin: "auto",
-          mt: 10,
-          borderRadius: 2,
-          display: "flex",
-          flexDirection: "column",
-          gap: 2,
-        }}
-      >
-        <h2 id="modal-title">Add Task</h2>
+    <Modal open={open} onClose={onClose} aria-labelledby="modal-title" className="modal">
+      <Box className="modal-content">
+        <Box className="modal-header">
+          <h3 id="modal-title">Add Task</h3>
+          <IconButton onClick={onClose}>
+            <CancelIcon></CancelIcon>
+          </IconButton>
+        </Box>
+        <Box className="modal-body">
+          <TextField
+            multiline
+            className="task-input"
+            placeholder="Add your task..."
+            value={taskText}
+            onChange={handleUpdate}
+            minRows={4}
+          />
+          <p id="char-count">{count}/{MAX_CHARS}</p>
 
-        <TextField
-          multiline
-          placeholder="Add your task..."
-          value={taskText}
-          onChange={(e) => setTaskText(e.target.value)}
-        />
-
-        <Box sx={{ display: "flex", justifyContent: "space-between" }}>
-          <Button variant="contained" color="primary" onClick={save}>
+        </Box>
+        <Box className="modal-buttons">
+          <Button
+            onClick={save}
+            variant="contained"
+            color="#101218"
+            sx={{
+              '&:hover': {
+                backgroundColor: '#00ADB5',
+              },
+              '&:active': {
+                backgroundColor: 'lightblue',
+              },
+              border: "2px solid #00ADB5"
+            }}
+          >
             Save
-          </Button>
-          <Button variant="outlined" color="secondary" onClick={onClose}>
-            Close
           </Button>
         </Box>
       </Box>
     </Modal>
   );
-}
+} 

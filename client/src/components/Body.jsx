@@ -4,6 +4,7 @@ import "../styles/Body.css"
 import { IconButton } from "@mui/material"
 import SearchIcon from "@mui/icons-material/Search"
 import AddIcon from "@mui/icons-material/AddCircleOutline"
+import Task from "./Task";
 
 export default function Body() {
   const [board, setBoard] = useState({
@@ -75,12 +76,11 @@ export default function Body() {
               <AddIcon sx={{ color: "#00ADB5" }}></AddIcon>
             </IconButton>
           </div>
-          <div className="todos">
-            <ul>
-              {board.todoTasks.map((task, index) => (
-                <li key={index}>{task}</li>
-              ))}
-            </ul>
+          <div className="todos" onDrop={handleOnDrop} onDragOver={handleDragOver}>
+
+            {board.todoTasks.map((task, index) => (
+              <Task id={index} task={task}></Task>
+            ))}
           </div>
         </div>
 
