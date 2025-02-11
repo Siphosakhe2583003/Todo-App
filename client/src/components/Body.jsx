@@ -42,6 +42,26 @@ export default function Body() {
     }))
   }
 
+  function handleOnDrop(e, dropCategory) {
+    const todoType = e.dataTransfer.getData("todoType");
+    const todo = e.dataTransfer.getData("todo");
+    if (todoType == dropCategory) return;
+    setBoard(prevBoard => ({
+      ...prevBoard,
+      [dropCategory]: [...prevBoard[dropCategory], todo],
+      [todoType]: [...prevBoard[todoType].filter(task => task !== todo)],
+    }))
+  }
+
+  function handleDragOver(e) {
+    e.preventDefault();
+  }
+
+  function handleOnDrag(e, type, todo) {
+    e.dataTransfer.setData("todoType", type);
+    e.dataTransfer.setData("todo", todo)
+  }
+
   return (
     <div className="content">
       <label>
@@ -69,52 +89,50 @@ export default function Body() {
 
       <section className="main-body">
         {/* To-Do Column */}
-        <div className="field">
+        <div className="field" onDrop={(e) => handleOnDrop(e, "todoTasks")} onDragOver={handleDragOver}>
           <div className="field-header">
             <h3>To-do</h3>
             <IconButton className="add-button" onClick={() => toggleAddTask("todoTasks")}>
               <AddIcon sx={{ color: "#00ADB5" }}></AddIcon>
             </IconButton>
           </div>
-          <div className="todos" onDrop={handleOnDrop} onDragOver={handleDragOver}>
+          <div className="todos" >
 
             {board.todoTasks.map((task, index) => (
-              <Task id={index} task={task}></Task>
+              <Task className='task' draggable key={index} type={"todoTasks"} id={index} task={task} handleOnDrag={handleOnDrag}></Task>
             ))}
           </div>
         </div>
 
         {/* Doing Column */}
-        <div className="field">
+        <div className="field" onDrop={(e) => handleOnDrop(e, "doingTasks")} onDragOver={handleDragOver}>
           <div className="field-header">
             <h3>Doing</h3>
             <IconButton className="add-button" onClick={() => toggleAddTask("doingTasks")}>
               <AddIcon sx={{ color: "#00ADB5" }}></AddIcon>
             </IconButton>
           </div>
-          <div className="todos">
-            <ul>
-              {board.doingTasks.map((task, index) => (
-                <li key={index}>{task}</li>
-              ))}
-            </ul>
+          <div className="todos" >
+
+            {board.doingTasks.map((task, index) => (
+              <Task className='task' draggable key={index} type={"doingTasks"} id={index} task={task} handleOnDrag={handleOnDrag}></Task>
+            ))}
           </div>
         </div>
 
         {/* Completed Column */}
-        <div className="field">
+        <div className="field" onDrop={(e) => handleOnDrop(e, "completedTasks")} onDragOver={handleDragOver}>
           <div className="field-header">
             <h3>Completed</h3>
             <IconButton className="add-button" onClick={() => toggleAddTask("completedTasks")}>
               <AddIcon sx={{ color: "#00ADB5" }}></AddIcon>
             </IconButton>
           </div>
-          <div className="todos">
-            <ul>
-              {board.completedTasks.map((task, index) => (
-                <li key={index}>{task}</li>
-              ))}
-            </ul>
+          <div className="todos" >
+
+            {board.completedTasks.map((task, index) => (
+              <Task className='task' draggable key={index} type={"completedTasks"} id={index} task={task} handleOnDrag={handleOnDrag}></Task>
+            ))}
           </div>
         </div>
       </section>

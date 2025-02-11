@@ -1,9 +1,9 @@
 import React, { useState } from 'react'
 
-export default function Task({ id, task }) {
+export default function Task({ id, task, handleOnDrag, type }) {
   return (
-    <div className="task">
-
+    <div className="task" key={id} draggable onDragStart={e => handleOnDrag(e, type, task)}>
+      {task}
     </div>
   )
 }

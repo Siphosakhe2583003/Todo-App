@@ -57,15 +57,16 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  background: var(--primary-color);
+  background: var(--secondary-color);
   overflow: hidden;
+  border-radius: 20px;
+  height: fit-content;
 }
 
 .field-header {
   background: var(--secondary-color);
   display: flex;
   justify-content: space-between;
-  border-radius: 20px;
   height: 52px;
   align-items: center;
   border: 20px;
@@ -145,4 +146,15 @@
 
 .save-button {
   background: var(--primary-color);
+}
+
+.todos {
+  margin: 0 0.25rem;
+}
+
+.task {
+  background-color: var(--primary-color);
+  padding-left: 0.5rem;
+  margin-bottom: 0.5rem;
+  border-radius: 5px;
 }
