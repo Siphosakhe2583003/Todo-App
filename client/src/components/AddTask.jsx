@@ -2,8 +2,8 @@ import React, { useState } from "react";
 import { Modal, Box, Button, TextField, IconButton } from "@mui/material";
 import CancelIcon from "@mui/icons-material/Cancel"
 
-export default function AddTask({ open, onClose, addTask }) {
-  const [taskText, setTaskText] = useState("");
+export default function AddTask({ open, onClose, addTask, selectedTask }) {
+  const [taskText, setTaskText] = useState(selectedTask);
   const [count, setCount] = useState(taskText.length)
   const MAX_CHARS = 256;
 
@@ -29,7 +29,9 @@ export default function AddTask({ open, onClose, addTask }) {
         <Box className="modal-header">
           <h3 id="modal-title">Add Task</h3>
           <IconButton onClick={onClose}>
-            <CancelIcon></CancelIcon>
+            <CancelIcon sx={{
+              color: '#00ADB5',
+            }}></CancelIcon>
           </IconButton>
         </Box>
         <Box className="modal-body">

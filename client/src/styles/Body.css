@@ -70,6 +70,7 @@
   height: 52px;
   align-items: center;
   border: 20px;
+  user-select: none;
 }
 
 .field-header h3 {
@@ -149,12 +150,12 @@
 }
 
 .todos {
-  margin: 0 0.25rem;
+  margin: 0 0.5rem;
 }
 
 .task {
   background-color: var(--primary-color);
-  padding-left: 0.5rem;
+  padding: 0.5rem;
   margin-bottom: 0.5rem;
-  border-radius: 5px;
+  border-radius: 10px;
 }

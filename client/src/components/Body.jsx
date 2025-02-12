@@ -17,10 +17,16 @@ export default function Body() {
   const [searchText, setSearchText] = useState("");
   const [openModal, setOpenModal] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState("todoTasks"); // Tracks category for new task
+  const [selectedTask, setSelectedTask] = useState("");
 
   function toggleAddTask(category) {
     setSelectedCategory(category);
     setOpenModal(true);
+  }
+
+  function handleAddTask(category) {
+    toggleAddTask(category);
+    setSelectedTask("");
   }
 
   function closeAddTask() {
@@ -92,14 +98,14 @@ export default function Body() {
         <div className="field" onDrop={(e) => handleOnDrop(e, "todoTasks")} onDragOver={handleDragOver}>
           <div className="field-header">
             <h3>To-do</h3>
-            <IconButton className="add-button" onClick={() => toggleAddTask("todoTasks")}>
+            <IconButton className="add-button" onClick={() => handleAddTask("todoTasks")}>
               <AddIcon sx={{ color: "#00ADB5" }}></AddIcon>
             </IconButton>
           </div>
           <div className="todos" >
 
             {board.todoTasks.map((task, index) => (
-              <Task className='task' draggable key={index} type={"todoTasks"} id={index} task={task} handleOnDrag={handleOnDrag}></Task>
+              <Task className='task' draggable key={index} type={"todoTasks"} id={index} task={task} handleOnDrag={handleOnDrag} setSelectedTask={setSelectedTask}></Task>
             ))}
           </div>
         </div>
@@ -108,7 +114,7 @@ export default function Body() {
         <div className="field" onDrop={(e) => handleOnDrop(e, "doingTasks")} onDragOver={handleDragOver}>
           <div className="field-header">
             <h3>Doing</h3>
-            <IconButton className="add-button" onClick={() => toggleAddTask("doingTasks")}>
+            <IconButton className="add-button" onClick={() => handleAddTask("doingTasks")}>
               <AddIcon sx={{ color: "#00ADB5" }}></AddIcon>
             </IconButton>
           </div>
@@ -124,7 +130,7 @@ export default function Body() {
         <div className="field" onDrop={(e) => handleOnDrop(e, "completedTasks")} onDragOver={handleDragOver}>
           <div className="field-header">
             <h3>Completed</h3>
-            <IconButton className="add-button" onClick={() => toggleAddTask("completedTasks")}>
+            <IconButton className="add-button" onClick={() => handleAddTask("completedTasks")}>
               <AddIcon sx={{ color: "#00ADB5" }}></AddIcon>
             </IconButton>
           </div>
@@ -137,7 +143,7 @@ export default function Body() {
         </div>
       </section>
 
-      <AddTask open={openModal} onClose={closeAddTask} addTask={addTask} />
+      <AddTask open={openModal} onClose={closeAddTask} addTask={addTask} selectedTask={selectedTask} />
     </div>
   );
 }
