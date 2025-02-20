@@ -3,7 +3,7 @@ import { IconButton } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 
-export default function Task({ id, task, handleOnDrag, type, setSelectedTask, }) {
+export default function Task({ id, task, handleOnDrag, type }) {
   const [isHovered, setIsHovered] = useState(false);
   return (
     <div

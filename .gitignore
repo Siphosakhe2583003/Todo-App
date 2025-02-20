@@ -14,4 +14,5 @@ vendor/
 
 /bin/
 
+./client/src/config.js
 

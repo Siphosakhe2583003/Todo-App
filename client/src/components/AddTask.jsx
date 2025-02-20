@@ -2,8 +2,8 @@ import React, { useState } from "react";
 import { Modal, Box, Button, TextField, IconButton } from "@mui/material";
 import CancelIcon from "@mui/icons-material/Cancel"
 
-export default function AddTask({ open, onClose, addTask, selectedTask }) {
-  const [taskText, setTaskText] = useState(selectedTask);
+export default function AddTask({ open, onClose, addTask }) {
+  const [taskText, setTaskText] = useState("");
   const [count, setCount] = useState(taskText.length)
   const MAX_CHARS = 256;
 

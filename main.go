@@ -3,20 +3,34 @@ package main
 import (
 	"context"
 	"fmt"
+	"log"
+	"os"
+
 	"github.com/gofiber/fiber/v2"
 	"github.com/joho/godotenv"
+
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
-	"log"
-	"os"
 )
 
 type Todo struct {
 	ID        primitive.ObjectID `json:"id,omitempty" bson:"_id,omitempty"`
 	Completed bool               `json:"completed" bson:"completed"`
 	Body      string             `json:"body" bson:"body"`
+}
+
+type Board struct {
+	ID   primitive.ObjectID `json:"id,omitempty" bson:"_id,omitempty"`
+	Todo []Todo             `json:"todos" bson:"todos"`
+}
+
+type User struct {
+	ID     primitive.ObjectID `json:"id,omitempty" bson:"_id,omitempty"`
+	Name   string             `json:"name" bson:"name"`
+	Email  string             `json:"email" bson:"email"`
+	Boards []Board            `json:"boards" bson:"boards"`
 }
 
 var collection *mongo.Collection
