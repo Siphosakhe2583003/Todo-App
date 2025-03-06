@@ -14,5 +14,5 @@ vendor/
 
 /bin/
 
-./client/src/config.js
-
+client/src/config.js
+serviceAccountKey.json
