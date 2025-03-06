@@ -14,7 +14,6 @@ onAuthStateChanged(auth, (user) => {
   if (user == null) {
     signInWithPopup(auth, new GoogleAuthProvider())
   }
-  console.log(user)
 })
 
 export default function Header() {
