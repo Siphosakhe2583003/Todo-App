@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import fetchBoards from "./utils.js"
 import { IconButton } from "@mui/material"
 import SearchIcon from "@mui/icons-material/Search"
 import AddIcon from "@mui/icons-material/AddCircleOutline"
@@ -7,6 +8,15 @@ import AddTask from "./AddTask"
 import "../styles/Body.css"
 
 export default function Body() {
+  useEffect(() => {
+    const fetchData = async () => {
+      const data = await fetchBoards();
+      console.log(data);
+    };
+
+    fetchData();
+  }, []);
+
   const [board, setBoard] = useState({
     boardName: "",
     todoTasks: [],
