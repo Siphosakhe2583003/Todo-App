@@ -52,4 +52,44 @@ async function getBoardTasks(id) {
 }
 
 
-export { fetchBoards, fetchLastUsedBoard, getBoardTasks };  
+async function postTasks(task, id) {
+  try {
+    const res = await fetch(`${URL}/boards/${id}/tasks`, {
+      method: "POST",
+      credentials: "include",
+      body: JSON.stringify(task)
+    })
+    if (!res.ok) {
+      console.log(res)
+      throw new Error(`Error ${res.status}: ${res}`)
+    }
+    return await res.json()
+  }
+  catch (error) {
+    console.error(error.message)
+  }
+  return null
+}
+
+async function changeCategory(taskId, boardId, category) {
+  try {
+    const res = await fetch(`${URL}/boards/${boardId}/tasks/${taskId}/type`, {
+      method: "PUT",
+      credentials: "include",
+      body: JSON.stringify({ "type": category })
+    })
+    if (!res.ok) {
+      console.log(res)
+      throw new Error(`Error ${res.status}: ${res}`)
+    }
+    return await res.json()
+  }
+  catch (error) {
+    console.error(error.message)
+  }
+  return null
+}
+
+
+
+export { fetchBoards, fetchLastUsedBoard, getBoardTasks, postTasks, changeCategory }

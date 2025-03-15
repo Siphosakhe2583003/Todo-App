@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
-import { fetchBoards, fetchLastUsedBoard, getBoardTasks } from "./utils.js";
+import { fetchBoards, fetchLastUsedBoard, getBoardTasks, postTasks, changeCategory } from "./utils.js";
 import { IconButton } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 import AddIcon from "@mui/icons-material/AddCircleOutline";
@@ -62,15 +62,56 @@ export default function Body() {
         setOpenModal(false);
     }
 
-    const addTask = (newTask) => {
-        setBoard((prevBoard) => ({
-            ...prevBoard,
-            tasks: {
-                ...prevBoard.tasks,
-                [newTask.id]: { ...newTask, type: selectedCategory },
-            },
-        }));
-        closeAddTask();
+    const addTask = async (content) => {
+        const tempId = Date.now().toString();
+
+        const task = {
+            content: content,
+            type: selectedCategory,
+        };
+
+        // Optimistically update the UI
+        setBoard((prevBoard) => {
+            return {
+                ...prevBoard,
+                tasks: {
+                    ...prevBoard.tasks,
+                    [tempId]: { ...task, id: tempId, isPending: true }, // Temporary task
+                },
+            };
+        });
+
+        try {
+            const data = await postTasks(task, board.id);
+
+            if (!data) {
+                throw new Error("Failed to add task");
+            }
+
+            // Replace the temporary task with the actual one
+            setBoard((prevBoard) => {
+                const updatedTasks = { ...prevBoard.tasks };
+                delete updatedTasks[tempId]; // Remove the temp task
+                return {
+                    ...prevBoard,
+                    tasks: {
+                        ...updatedTasks,
+                        [data.id]: { ...data.task, id: data.id },
+                    },
+                };
+            });
+
+        } catch (error) {
+            console.error(error);
+            // Rollback: Remove the temporary task if the API call fails
+            setBoard((prevBoard) => {
+                const updatedTasks = { ...prevBoard.tasks };
+                delete updatedTasks[tempId];
+                return { ...prevBoard, tasks: updatedTasks };
+            });
+
+            // TODO: Show an error notification (toast)
+        }
     };
 
     function addBoardName(name) {
@@ -80,9 +121,13 @@ export default function Body() {
         }));
     }
 
-    function handleOnDrop(e, dropCategory) {
+    async function handleOnDrop(e, dropCategory) {
         const taskId = e.dataTransfer.getData("taskId");
+        const task = board.tasks[taskId];
+
         if (!taskId) return;
+
+        if (task.type === dropCategory) return;
 
         setBoard((prevBoard) => ({
             ...prevBoard,
@@ -91,14 +136,32 @@ export default function Body() {
                 [taskId]: { ...prevBoard.tasks[taskId], type: dropCategory },
             },
         }));
-    }
 
+        try {
+            const data = await changeCategory(taskId, board.id, dropCategory);
+
+            if (!data) {
+                throw new Error("Board or task doesn't exist");
+            }
+        } catch (error) {
+            console.error(error);
+
+            setBoard((prevBoard) => ({
+                ...prevBoard,
+                tasks: {
+                    ...prevBoard.tasks,
+                    [taskId]: { ...prevBoard.tasks[taskId], type: task.type }, // Revert to original type
+                },
+            }));
+
+            // TODO: (toast notification, error color change)
+        }
+    }
     function handleDragOver(e) {
         e.preventDefault();
     }
 
     function handleOnDrag(e, taskId) {
-        console.log(board)
         e.dataTransfer.setData("taskId", taskId);
     }
 
