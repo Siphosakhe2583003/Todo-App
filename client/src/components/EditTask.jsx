@@ -2,24 +2,22 @@ import React, { useState } from "react";
 import { Modal, Box, Button, TextField, IconButton } from "@mui/material";
 import CancelIcon from "@mui/icons-material/Cancel"
 
-export default function AddTask({ open, onClose, addTask }) {
-  const [taskText, setTaskText] = useState("");
+export default function EditTask({ open, onClose, editTask, content }) {
+  const [taskText, setTaskText] = useState(content);
   const [count, setCount] = useState(taskText.length)
   const MAX_CHARS = 256;
 
   const handleUpdate = (e) => {
     const newText = e.target.value;
     if (newText.length > MAX_CHARS) return;
-
     setTaskText(newText);
     setCount(newText.length);
   };
 
   const save = () => {
+    // NOTE: Think about it later, must be able to save the task in a convinient way
     if (taskText.trim() === "") return;
-    addTask(taskText);
-    setTaskText(""); // Clear input after saving
-    setCount(0);
+    editTask(taskText);
     onClose();
   };
 
@@ -27,7 +25,7 @@ export default function AddTask({ open, onClose, addTask }) {
     <Modal open={open} onClose={onClose} aria-labelledby="modal-title" className="modal">
       <Box className="modal-content">
         <Box className="modal-header">
-          <h3 id="modal-title">Add Task</h3>
+          <h3 id="modal-title">Edit Task</h3>
           <IconButton onClick={onClose}>
             <CancelIcon sx={{
               color: '#00ADB5',
@@ -67,4 +65,4 @@ export default function AddTask({ open, onClose, addTask }) {
       </Box>
     </Modal>
   );
-} 
+}

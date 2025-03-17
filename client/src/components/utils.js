@@ -90,6 +90,57 @@ async function changeCategory(taskId, boardId, category) {
   return null
 }
 
+async function updateTaskContent(taskId, boardId, content) {
+  try {
+    const res = await fetch(`${URL}/boards/${boardId}/tasks/${taskId}`, {
+      method: "PUT",
+      credentials: "include",
+      body: JSON.stringify({ "content": content })
+    })
+    if (!res.ok) {
+      console.log(res)
+      throw new Error(`Error ${res.status}: ${res}`)
+    }
+    return await res.json()
+  }
+  catch (error) {
+    console.error(error.message)
+  }
+  return null
+}
 
+async function removeTask(taskId, boardId) {
+  try {
+    const res = await fetch(`${URL}/boards/${boardId}/tasks/${taskId}`, {
+      method: "DELETE",
+      credentials: "include",
+    })
+    if (!res.ok) throw new Error(`Error ${res.status}: ${res.statusText}`)
+    return await res.json()
+  }
+  catch (error) {
+    console.error(error)
+  }
+  return null
+}
 
-export { fetchBoards, fetchLastUsedBoard, getBoardTasks, postTasks, changeCategory }
+async function saveBoard(boardId, newBoardName) {
+  try {
+    const res = await fetch(`${URL}/boards/${boardId}`, {
+      method: "PUT",
+      credentials: "include",
+      body: JSON.stringify({ "name": newBoardName })
+    })
+    if (!res.ok) {
+      console.log(res)
+      throw new Error(`Error ${res.status}: ${res}`)
+    }
+    return await res.json()
+  }
+  catch (error) {
+    console.error(error.message)
+  }
+  return null
+}
+
+export { fetchBoards, fetchLastUsedBoard, getBoardTasks, postTasks, changeCategory, updateTaskContent, removeTask, saveBoard }

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
-import { fetchBoards, fetchLastUsedBoard, getBoardTasks, postTasks, changeCategory } from "./utils.js";
+import { fetchBoards, fetchLastUsedBoard, getBoardTasks, postTasks, changeCategory, saveBoard } from "./utils.js";
 import { IconButton } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 import AddIcon from "@mui/icons-material/AddCircleOutline";
@@ -10,6 +10,8 @@ import "../styles/Body.css";
 
 export default function Body() {
     const [user, setUser] = useState(null);
+    const [isEditingBoardName, setIsEditingBoardName] = useState(true)
+    const [prevBoardName, setPrevBoardName] = useState("")
     const [board, setBoard] = useState({
         id: "",
         boardName: "",
@@ -45,13 +47,43 @@ export default function Body() {
 
             setBoard({
                 id: boardData.id,
-                boardName: boardData.name || "",
+                boardName: boardData.name.trim() || "",
                 tasks: formattedTasks,
             });
+            setPrevBoardName(boardData.name.trim() || "")
         };
 
         fetchCurrBoard();
     }, [user]);
+
+
+    useEffect(() => {
+        if (!isEditingBoardName) {
+            setBoard(prevBoard => {
+                const trimmedName = prevBoard.boardName.trim(); // Trim the name before setting
+                return { ...prevBoard, boardName: trimmedName };
+            });
+
+            async function saveNewBoardName(boardId, newName) {
+                if (newName === prevBoardName) return;
+
+                console.log(newName.length, prevBoardName.length);
+
+                const status = await saveBoard(boardId, newName);
+                console.log("saving board name");
+
+                if (!status) {
+                    console.error("Failed to change board name");
+                    setBoard(prevBoard => ({ ...prevBoard, boardName: prevBoardName }));
+                    return;
+                }
+
+                setPrevBoardName(newName); // Update previous name only if save is successful
+            }
+            setTimeout(() => saveNewBoardName(board.id, board.boardName.trim()), 0);
+        }
+    }, [isEditingBoardName]);
+
 
     function toggleAddTask(category) {
         setSelectedCategory(category);
@@ -115,6 +147,7 @@ export default function Body() {
     };
 
     function addBoardName(name) {
+        setIsEditingBoardName(true)
         setBoard((prevBoard) => ({
             ...prevBoard,
             boardName: name,
@@ -173,6 +206,7 @@ export default function Body() {
                     value={board.boardName}
                     placeholder="Enter Board Name"
                     onChange={(e) => addBoardName(e.target.value)}
+                    onBlur={() => setIsEditingBoardName(false)}
                     id="board-name"
                 />
             </label>
@@ -214,6 +248,8 @@ export default function Body() {
                                         id={task.id}
                                         type={task.type}
                                         task={task.content}
+                                        board={board}
+                                        setBoard={setBoard}
                                         handleOnDrag={(e) => handleOnDrag(e, task.id)}
                                     />
                                 ))}
