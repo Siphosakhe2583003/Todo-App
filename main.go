@@ -175,7 +175,6 @@ func getLastUpdatedBoard(c *fiber.Ctx) error {
 	if err != nil {
 		return c.Status(500).SendString("Error fetching Boards")
 	}
-	fmt.Print(docs)
 
 	var board map[string]interface{}
 	currTime := time.Now()
