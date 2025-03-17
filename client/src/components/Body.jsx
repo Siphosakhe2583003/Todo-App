@@ -1,144 +1,265 @@
-import React, { useState } from "react";
-import { IconButton } from "@mui/material"
-import SearchIcon from "@mui/icons-material/Search"
-import AddIcon from "@mui/icons-material/AddCircleOutline"
+import React, { useState, useEffect } from "react";
+import { getAuth, onAuthStateChanged } from "firebase/auth";
+import { fetchBoards, fetchLastUsedBoard, getBoardTasks, postTasks, changeCategory, saveBoard } from "./utils.js";
+import { IconButton } from "@mui/material";
+import SearchIcon from "@mui/icons-material/Search";
+import AddIcon from "@mui/icons-material/AddCircleOutline";
 import Task from "./Task";
-import AddTask from "./AddTask"
-import "../styles/Body.css"
+import AddTask from "./AddTask";
+import "../styles/Body.css";
 
 export default function Body() {
-  const [board, setBoard] = useState({
-    boardName: "",
-    todoTasks: [],
-    doingTasks: [],
-    completedTasks: [],
-  });
+    const [user, setUser] = useState(null);
+    const [isEditingBoardName, setIsEditingBoardName] = useState(true)
+    const [prevBoardName, setPrevBoardName] = useState("")
+    const [board, setBoard] = useState({
+        id: "",
+        boardName: "",
+        tasks: {}, // stores { taskId: taskData }
+    });
 
-  const [searchText, setSearchText] = useState("");
-  const [openModal, setOpenModal] = useState(false);
-  const [selectedCategory, setSelectedCategory] = useState("todoTasks"); // Tracks category for new task
+    const [searchText, setSearchText] = useState("");
+    const [openModal, setOpenModal] = useState(false);
+    const [selectedCategory, setSelectedCategory] = useState("Todo"); // Tracks category for new task
 
-  function toggleAddTask(category) {
-    setSelectedCategory(category);
-    setOpenModal(true);
-  }
+    useEffect(() => {
+        const auth = getAuth();
+        const unsubscribe = onAuthStateChanged(auth, (user) => {
+            setUser(user ? user : null);
+        });
+        return () => unsubscribe();
+    }, []);
 
-  function closeAddTask() {
-    setOpenModal(false);
-  }
+    useEffect(() => {
+        if (!user) return;
 
-  const addTask = (newTask) => {
-    setBoard((prevBoard) => ({
-      ...prevBoard,
-      [selectedCategory]: [...prevBoard[selectedCategory], newTask], // Dynamically updates the correct category
-    }));
-    closeAddTask(); // Close modal after adding task
-  };
+        const fetchCurrBoard = async () => {
+            const boardData = await fetchLastUsedBoard();
+            if (!boardData) return;
 
-  function addBoardName(name) {
-    setBoard((prevBoard) => ({
-      ...prevBoard,
-      boardName: name
-    }))
-  }
+            const boardTasks = await getBoardTasks(boardData.id);
+            if (!boardTasks) return;
 
-  function handleOnDrop(e, dropCategory) {
-    const todoType = e.dataTransfer.getData("todoType");
-    const todo = e.dataTransfer.getData("todo");
-    if (todoType == dropCategory) return;
-    setBoard(prevBoard => ({
-      ...prevBoard,
-      [dropCategory]: [...prevBoard[dropCategory], todo],
-      [todoType]: [...prevBoard[todoType].filter(task => task !== todo)],
-    }))
-  }
+            const formattedTasks = boardTasks.reduce((acc, task) => {
+                acc[task.id] = task;
+                return acc;
+            }, {});
 
-  function handleDragOver(e) {
-    e.preventDefault();
-  }
+            setBoard({
+                id: boardData.id,
+                boardName: boardData.name.trim() || "",
+                tasks: formattedTasks,
+            });
+            setPrevBoardName(boardData.name.trim() || "")
+        };
 
-  function handleOnDrag(e, type, todo) {
-    e.dataTransfer.setData("todoType", type);
-    e.dataTransfer.setData("todo", todo)
-  }
+        fetchCurrBoard();
+    }, [user]);
 
-  return (
-    <div className="content">
-      <label>
-        <input
-          type="text"
-          value={board.boardName}
-          placeholder="Enter Board Name"
-          onChange={(e) => addBoardName(e.target.value)}
-          id='board-name'
-        />
 
-      </label>
+    useEffect(() => {
+        if (!isEditingBoardName) {
+            setBoard(prevBoard => {
+                const trimmedName = prevBoard.boardName.trim(); // Trim the name before setting
+                return { ...prevBoard, boardName: trimmedName };
+            });
 
-      <div className="search-area">
-        <input
-          type="text"
-          value={searchText}
-          placeholder="Search"
-          onChange={(e) => setSearchText(e.target.value)}
-        />
-        <IconButton>
-          <SearchIcon style={{ color: "white" }}></SearchIcon>
-        </IconButton>
-      </div>
+            async function saveNewBoardName(boardId, newName) {
+                if (newName === prevBoardName) return;
 
-      <section className="main-body">
-        {/* To-Do Column */}
-        <div className="field" onDrop={(e) => handleOnDrop(e, "todoTasks")} onDragOver={handleDragOver}>
-          <div className="field-header">
-            <h3>To-do</h3>
-            <IconButton className="add-button" onClick={() => toggleAddTask("todoTasks")}>
-              <AddIcon sx={{ color: "#00ADB5" }}></AddIcon>
-            </IconButton>
-          </div>
-          <div className="todos" >
+                console.log(newName.length, prevBoardName.length);
 
-            {board.todoTasks.map((task, index) => (
-              <Task className='task' draggable key={index} type={"todoTasks"} id={index} task={task} handleOnDrag={handleOnDrag}></Task>
-            ))}
-          </div>
+                const status = await saveBoard(boardId, newName);
+                console.log("saving board name");
+
+                if (!status) {
+                    console.error("Failed to change board name");
+                    setBoard(prevBoard => ({ ...prevBoard, boardName: prevBoardName }));
+                    return;
+                }
+
+                setPrevBoardName(newName); // Update previous name only if save is successful
+            }
+            setTimeout(() => saveNewBoardName(board.id, board.boardName.trim()), 0);
+        }
+    }, [isEditingBoardName]);
+
+
+    function toggleAddTask(category) {
+        setSelectedCategory(category);
+        setOpenModal(true);
+    }
+
+    function closeAddTask() {
+        setOpenModal(false);
+    }
+
+    const addTask = async (content) => {
+        const tempId = Date.now().toString();
+
+        const task = {
+            content: content,
+            type: selectedCategory,
+        };
+
+        // Optimistically update the UI
+        setBoard((prevBoard) => {
+            return {
+                ...prevBoard,
+                tasks: {
+                    ...prevBoard.tasks,
+                    [tempId]: { ...task, id: tempId, isPending: true }, // Temporary task
+                },
+            };
+        });
+
+        try {
+            const data = await postTasks(task, board.id);
+
+            if (!data) {
+                throw new Error("Failed to add task");
+            }
+
+            // Replace the temporary task with the actual one
+            setBoard((prevBoard) => {
+                const updatedTasks = { ...prevBoard.tasks };
+                delete updatedTasks[tempId]; // Remove the temp task
+                return {
+                    ...prevBoard,
+                    tasks: {
+                        ...updatedTasks,
+                        [data.id]: { ...data.task, id: data.id },
+                    },
+                };
+            });
+
+        } catch (error) {
+            console.error(error);
+            // Rollback: Remove the temporary task if the API call fails
+            setBoard((prevBoard) => {
+                const updatedTasks = { ...prevBoard.tasks };
+                delete updatedTasks[tempId];
+                return { ...prevBoard, tasks: updatedTasks };
+            });
+
+            // TODO: Show an error notification (toast)
+        }
+    };
+
+    function addBoardName(name) {
+        setIsEditingBoardName(true)
+        setBoard((prevBoard) => ({
+            ...prevBoard,
+            boardName: name,
+        }));
+    }
+
+    async function handleOnDrop(e, dropCategory) {
+        const taskId = e.dataTransfer.getData("taskId");
+        const task = board.tasks[taskId];
+
+        if (!taskId) return;
+
+        if (task.type === dropCategory) return;
+
+        setBoard((prevBoard) => ({
+            ...prevBoard,
+            tasks: {
+                ...prevBoard.tasks,
+                [taskId]: { ...prevBoard.tasks[taskId], type: dropCategory },
+            },
+        }));
+
+        try {
+            const data = await changeCategory(taskId, board.id, dropCategory);
+
+            if (!data) {
+                throw new Error("Board or task doesn't exist");
+            }
+        } catch (error) {
+            console.error(error);
+
+            setBoard((prevBoard) => ({
+                ...prevBoard,
+                tasks: {
+                    ...prevBoard.tasks,
+                    [taskId]: { ...prevBoard.tasks[taskId], type: task.type }, // Revert to original type
+                },
+            }));
+
+            // TODO: (toast notification, error color change)
+        }
+    }
+    function handleDragOver(e) {
+        e.preventDefault();
+    }
+
+    function handleOnDrag(e, taskId) {
+        e.dataTransfer.setData("taskId", taskId);
+    }
+
+    return (
+        <div className="content">
+            <label>
+                <input
+                    type="text"
+                    value={board.boardName}
+                    placeholder="Enter Board Name"
+                    onChange={(e) => addBoardName(e.target.value)}
+                    onBlur={() => setIsEditingBoardName(false)}
+                    id="board-name"
+                />
+            </label>
+
+            <div className="search-area">
+                <input
+                    type="text"
+                    value={searchText}
+                    placeholder="Search"
+                    onChange={(e) => setSearchText(e.target.value)}
+                />
+                <IconButton>
+                    <SearchIcon style={{ color: "white" }} />
+                </IconButton>
+            </div>
+
+            <section className="main-body">
+                {["Todo", "Doing", "Completed"].map((category) => (
+                    <div
+                        key={category}
+                        className="field"
+                        onDrop={(e) => handleOnDrop(e, category)}
+                        onDragOver={handleDragOver}
+                    >
+                        <div className="field-header">
+                            <h3>{category}</h3>
+                            <IconButton className="add-button" onClick={() => toggleAddTask(category)}>
+                                <AddIcon sx={{ color: "#00ADB5" }} />
+                            </IconButton>
+                        </div>
+                        <div className="todos">
+                            {Object.values(board.tasks)
+                                .filter((task) => task.type === category)
+                                .map((task) => (
+                                    <Task
+                                        className="task"
+                                        draggable
+                                        key={task.id}
+                                        id={task.id}
+                                        type={task.type}
+                                        task={task.content}
+                                        board={board}
+                                        setBoard={setBoard}
+                                        handleOnDrag={(e) => handleOnDrag(e, task.id)}
+                                    />
+                                ))}
+                        </div>
+                    </div>
+                ))}
+            </section>
+
+            <AddTask open={openModal} onClose={closeAddTask} addTask={addTask} />
         </div>
-
-        {/* Doing Column */}
-        <div className="field" onDrop={(e) => handleOnDrop(e, "doingTasks")} onDragOver={handleDragOver}>
-          <div className="field-header">
-            <h3>Doing</h3>
-            <IconButton className="add-button" onClick={() => toggleAddTask("doingTasks")}>
-              <AddIcon sx={{ color: "#00ADB5" }}></AddIcon>
-            </IconButton>
-          </div>
-          <div className="todos" >
-
-            {board.doingTasks.map((task, index) => (
-              <Task className='task' draggable key={index} type={"doingTasks"} id={index} task={task} handleOnDrag={handleOnDrag}></Task>
-            ))}
-          </div>
-        </div>
-
-        {/* Completed Column */}
-        <div className="field" onDrop={(e) => handleOnDrop(e, "completedTasks")} onDragOver={handleDragOver}>
-          <div className="field-header">
-            <h3>Completed</h3>
-            <IconButton className="add-button" onClick={() => toggleAddTask("completedTasks")}>
-              <AddIcon sx={{ color: "#00ADB5" }}></AddIcon>
-            </IconButton>
-          </div>
-          <div className="todos" >
-
-            {board.completedTasks.map((task, index) => (
-              <Task className='task' draggable key={index} type={"completedTasks"} id={index} task={task} handleOnDrag={handleOnDrag}></Task>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <AddTask open={openModal} onClose={closeAddTask} addTask={addTask} />
-    </div>
-  );
+    );
 }
 

@@ -16,11 +16,11 @@ export default function AddTask({ open, onClose, addTask }) {
   };
 
   const save = () => {
-    if (taskText.trim() === "") return; // Prevent empty tasks
-    addTask(taskText); // Pass task to parent
+    if (taskText.trim() === "") return;
+    addTask(taskText);
     setTaskText(""); // Clear input after saving
     setCount(0);
-    onClose(); // Close modal
+    onClose();
   };
 
   return (
