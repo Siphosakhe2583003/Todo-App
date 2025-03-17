@@ -7,16 +7,16 @@ import {
   onAuthStateChanged,
 } from "firebase/auth";
 import "../styles/Header.css";
-import { IconButton, Dialog, DialogTitle, DialogContent, Button } from "@mui/material";
-import { AccountCircle } from "@mui/icons-material";
-import sidebar from "../assets/sidebar.svg";
+import { IconButton, Dialog, DialogTitle, DialogContent, Button, Divider } from "@mui/material";
+import { AccountCircle, Menu } from "@mui/icons-material";
+import Sidebar from "./Sidebar.jsx";
 
 const auth = getAuth();
 
-export default function Header() {
+export default function Header({ board, setBoard, setPrevBoardName }) {
   const [user, setUser] = useState(null);
   const [open, setOpen] = useState(false); // State for sign-in popup
-
+  const [sidebar, setSidebar] = useState(false);
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
@@ -50,40 +50,55 @@ export default function Header() {
   };
 
   return (
-    <div className="header">
-      <div className="header-l">
-        <button>
-          <img id="sidebar" src={sidebar} alt="sidebar" />
-        </button>
-        <h2 id="name">
-          <a href=".">GO-DO</a>
-        </h2>
-      </div>
-      <div className="header-r">
-        {!user && <button onClick={() => setOpen(true)}>Signin</button>}
-        <IconButton>
-          {user ? (
-            <img
-              src={user.photoURL}
-              alt="User"
-              style={{ width: 40, height: 40, borderRadius: "50%" }}
-            />
-          ) : (
-            <AccountCircle />
-          )}
-        </IconButton>
-      </div>
+    <>
+      <div className="header">
+        <div className="header-l">
+          <IconButton onClick={() => setSidebar(true)}>
+            <Menu />
+          </IconButton>
+          <h3 id="name">
+            <a href=".">GO-DO</a>
+          </h3>
+        </div>
+        <div className="header-r">
+          {!user && <button onClick={() => setOpen(true)}>Signin</button>}
+          <IconButton>
+            {user ? (
+              <img
+                src={user.photoURL}
+                alt="User"
+                style={{ width: 40, height: 40, borderRadius: "50%" }}
+              />
+            ) : (
+              <AccountCircle />
+            )}
+          </IconButton>
+        </div>
 
-      {/* Sign-in Modal */}
-      <Dialog open={open} onClose={() => setOpen(false)}>
-        <DialogTitle>Sign In</DialogTitle>
-        <DialogContent>
-          <Button variant="contained" onClick={signIn}>
-            Sign in with Google
-          </Button>
-        </DialogContent>
-      </Dialog>
-    </div>
+        <Dialog open={open} onClose={() => setOpen(false)} sx={{ "& .MuiPaper-root": { bgcolor: "var(--primary-color)", color: "white", padding: 2, borderRadius: 2 } }}>
+          <DialogTitle sx={{ textAlign: "center", fontWeight: "bold", color: "var(--tertiary-color)" }}>
+            Sign In
+          </DialogTitle>
+          <DialogContent sx={{ display: "flex", justifyContent: "center", padding: 3 }}>
+            <Button
+              variant="contained"
+              onClick={signIn}
+              sx={{
+                bgcolor: "var(--tertiary-color)",
+                color: "black",
+                fontWeight: "bold",
+                "&:hover": { bgcolor: "var(--secondary-color)", color: "white" },
+              }}
+            >
+              Sign in with Google
+            </Button>
+          </DialogContent>
+        </Dialog>
+        <Sidebar open={sidebar} setSidebar={setSidebar} board={board} setBoard={setBoard} setPrevBoardName={setPrevBoardName}></Sidebar>
+      </div>
+      <Divider sx={{ bgcolor: "var(--tertiary-color)", marginY: 1 }} />
+    </>
+
   );
 }
 

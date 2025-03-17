@@ -6,4 +6,4 @@ bin = "main"
 cmd = "go build -o {{.Output}} {{.Input}}"
 exclude = ["tmp/*", "client/**"]
 include = ["**/*.go"]
-ignore = ["tmp/*", "client/**"]
+ignore = ["tmp/*", "client/*"]

@@ -143,4 +143,23 @@ async function saveBoard(boardId, newBoardName) {
   return null
 }
 
-export { fetchBoards, fetchLastUsedBoard, getBoardTasks, postTasks, changeCategory, updateTaskContent, removeTask, saveBoard }
+async function createNewBoard() {
+  try {
+    const res = await fetch(`${URL}/boards`, {
+      method: "POST",
+      credentials: "include",
+      body: JSON.stringify({ name: "" })
+    })
+    if (!res.ok) {
+      console.log(res)
+      throw new Error(`Error ${res.status}: ${res}`)
+    }
+    return await res.json()
+  }
+  catch (error) {
+    console.error(error.message)
+  }
+  return null
+}
+
+export { fetchBoards, fetchLastUsedBoard, getBoardTasks, postTasks, changeCategory, updateTaskContent, removeTask, saveBoard, createNewBoard }
