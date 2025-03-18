@@ -13,7 +13,7 @@ import Sidebar from "./Sidebar.jsx";
 
 const auth = getAuth();
 
-export default function Header({ board, setBoard, setPrevBoardName }) {
+export default function Header({ board, setBoard, setPrevBoardName, myBoards, setMyBoards }) {
   const [user, setUser] = useState(null);
   const [open, setOpen] = useState(false); // State for sign-in popup
   const [sidebar, setSidebar] = useState(false);
@@ -94,7 +94,7 @@ export default function Header({ board, setBoard, setPrevBoardName }) {
             </Button>
           </DialogContent>
         </Dialog>
-        <Sidebar open={sidebar} setSidebar={setSidebar} board={board} setBoard={setBoard} setPrevBoardName={setPrevBoardName}></Sidebar>
+        <Sidebar open={sidebar} setSidebar={setSidebar} board={board} setBoard={setBoard} setPrevBoardName={setPrevBoardName} myBoards={myBoards} setMyBoards={setMyBoards}></Sidebar>
       </div>
       <Divider sx={{ bgcolor: "var(--tertiary-color)", marginY: 1 }} />
     </>

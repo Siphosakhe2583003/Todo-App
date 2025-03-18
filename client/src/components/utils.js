@@ -43,6 +43,7 @@ async function getBoardTasks(id) {
     if (!res.ok) {
       throw new Error(`Error ${res.status}: ${res.statusText}`)
     }
+    console.log(res)
     return await res.json()
   }
   catch (error) {

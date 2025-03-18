@@ -100,10 +100,10 @@ func getBoardByID(c *fiber.Ctx) error {
 	if err != nil {
 		return c.Status(404).SendString("Board not found")
 	}
-
 	// Convert Firestore data to JSON
 	boardData := doc.Data()
 	boardData["id"] = doc.Ref.ID
+
 	// Update Board Last Modified Time
 	err = updatesLastAccessTime(uid, boardID, ctx)
 	if err != nil {
@@ -136,7 +136,7 @@ func updateBoardName(c *fiber.Ctx) error {
 	// Update board name
 	_, err = docRef.Update(ctx, []firestore.Update{
 		{Path: "name", Value: requestBody.Name},
-		{Path: "updateAt", Value: time.Now()},
+		{Path: "updatedAt", Value: time.Now()},
 	})
 	if err != nil {
 		return c.Status(500).SendString("Error updating board name")

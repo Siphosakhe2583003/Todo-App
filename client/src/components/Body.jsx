@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
-import { fetchBoards, fetchLastUsedBoard, getBoardTasks, postTasks, changeCategory, saveBoard } from "./utils.js";
+import { fetchBoards, fetchLastUsedBoard, getBoardTasks, postTasks, changeCategory, saveBoard, createNewBoard } from "./utils.js";
 import { IconButton } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 import AddIcon from "@mui/icons-material/AddCircleOutline";
@@ -22,6 +22,7 @@ export default function Body() {
     const [searchText, setSearchText] = useState("");
     const [openModal, setOpenModal] = useState(false);
     const [selectedCategory, setSelectedCategory] = useState("Todo"); // Tracks category for new task
+    const [myBoards, setMyBoards] = useState([])
 
     useEffect(() => {
         const auth = getAuth();
@@ -31,30 +32,52 @@ export default function Body() {
         return () => unsubscribe();
     }, []);
 
+
     useEffect(() => {
         if (!user) return;
 
-        const fetchCurrBoard = async () => {
-            const boardData = await fetchLastUsedBoard();
-            if (!boardData) return;
+        function findLastUpdatedBoard(boards) {
+            if (!boards || boards.length === 0) return null;
+            return boards.reduce((latest, board) => {
+                if (!board.updatedAt) return latest;
+                return new Date(board.updatedAt) > new Date(latest.updatedAt) ? board : latest;
+            }, boards[0]);
+        }
 
-            const boardTasks = await getBoardTasks(boardData.id);
-            if (!boardTasks) return;
+        const fetchMyBoards = async () => {
+            const myBoardsData = await fetchBoards();
 
+            if (!myBoardsData || myBoardsData.length === 0) {
+                const newBoard = await createNewBoard();
+                setBoard({
+                    id: newBoard.id,
+                    boardName: "",
+                    tasks: {},
+                });
+                myBoards([newBoard]);
+                return;
+            }
+
+            setMyBoards(myBoardsData);
+
+            const latestUsedBoard = findLastUpdatedBoard(myBoardsData);
+            if (!latestUsedBoard) return;
+
+            const boardTasks = await getBoardTasks(latestUsedBoard.id) || [];
             const formattedTasks = boardTasks.reduce((acc, task) => {
                 acc[task.id] = task;
                 return acc;
             }, {});
 
             setBoard({
-                id: boardData.id,
-                boardName: boardData.name.trim() || "",
-                tasks: formattedTasks,
+                id: latestUsedBoard.id,
+                boardName: latestUsedBoard.name.trim() || "",
+                tasks: formattedTasks || {},
             });
-            setPrevBoardName(boardData.name.trim() || "")
+            setPrevBoardName(latestUsedBoard.name.trim() || "");
         };
 
-        fetchCurrBoard();
+        fetchMyBoards();
     }, [user]);
 
 
@@ -201,7 +224,7 @@ export default function Body() {
 
     return (
         <>
-            <Header board={board} setBoard={setBoard} setPrevBoardName={setPrevBoardName} />
+            <Header board={board} setBoard={setBoard} setPrevBoardName={setPrevBoardName} myBoards={myBoards} setMyBoards={setMyBoards} />
             <div className="content">
                 <label>
                     <input

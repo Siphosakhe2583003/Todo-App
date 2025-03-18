@@ -21,14 +21,9 @@ import ExpandMore from "@mui/icons-material/ExpandMore";
 import DashboardIcon from "@mui/icons-material/Dashboard";
 import { createNewBoard } from "./utils.js";
 
-export default function Sidebar({ open, setSidebar, board, setBoard, setPrevBoardName }) {
+export default function Sidebar({ open, setSidebar, board, setBoard, setPrevBoardName, myBoards, setMyBoards }) {
   const [openBoards, setOpenBoards] = useState(false);
-
-  const boards = [
-    { id: 1, name: "Board 1" },
-    { id: 2, name: "Board 2" },
-    { id: 3, name: "Board 3" },
-  ]
+  console.log(myBoards)
 
   const handleBoardsClick = () => {
     setOpenBoards(!openBoards);
@@ -82,8 +77,8 @@ export default function Sidebar({ open, setSidebar, board, setBoard, setPrevBoar
 
         <Collapse in={openBoards} timeout="auto" unmountOnExit>
           <List sx={{ paddingLeft: 3 }}>
-            {boards.length > 0 ? (
-              boards.map((board) => (
+            {myBoards.length > 0 ? (
+              myBoards.map((board) => (
                 <ListItemButton key={board.id} sx={{ "&:hover": { bgcolor: "var(--secondary-color)" } }}>
                   <ListItemText primary={board.name} sx={{ color: "white" }} />
                 </ListItemButton>
