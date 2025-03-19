@@ -100,14 +100,34 @@ func getBoardByID(c *fiber.Ctx) error {
 	if err != nil {
 		return c.Status(404).SendString("Board not found")
 	}
+
 	// Convert Firestore data to JSON
 	boardData := doc.Data()
 	boardData["id"] = doc.Ref.ID
 
+	// Fetch tasks
+	tasksCol := docRef.Collection("tasks")
+	tasksDocs, err := tasksCol.Documents(ctx).GetAll()
+	if err != nil {
+		return c.Status(500).SendString("Error fetching tasks")
+	}
+
+	// Initialize the tasks map
+	tasks := make(map[string]interface{})
+
+	for _, taskDoc := range tasksDocs {
+		taskData := taskDoc.Data()       // Get task data as a map
+		taskData["id"] = taskDoc.Ref.ID  // Add the task ID
+		tasks[taskDoc.Ref.ID] = taskData // Store modified task data
+	}
+
+	// Attach tasks to board data
+	boardData["tasks"] = tasks
+
 	// Update Board Last Modified Time
 	err = updatesLastAccessTime(uid, boardID, ctx)
 	if err != nil {
-		return c.Status(500).SendString("Board not found")
+		return c.Status(500).SendString("Failed to update last modified time")
 	}
 
 	return c.JSON(boardData)
@@ -409,7 +429,7 @@ func main() {
 	api.Get("/boards", getBoards)
 	api.Post("/boards", createBoard)
 	api.Delete("/boards/:id", deleteBoard)
-	api.Get("/boards/:id", getBoardByID)
+	api.Get("/boards/:id", getBoardByID) // must get the full board including its tasks
 	api.Put("/boards/:id", updateBoardName)
 
 	// Routes for adding tasks

@@ -19,17 +19,19 @@ import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import ExpandLess from "@mui/icons-material/ExpandLess";
 import ExpandMore from "@mui/icons-material/ExpandMore";
 import DashboardIcon from "@mui/icons-material/Dashboard";
-import { createNewBoard } from "./utils.js";
+import { createNewBoard, fetchBoard } from "./utils.js";
 
-export default function Sidebar({ open, setSidebar, board, setBoard, setPrevBoardName, myBoards, setMyBoards }) {
+
+export default function Sidebar({ open, setSidebar, board, setBoard, setPrevBoardName, myBoards, setMyBoards, setIsLoading }) {
   const [openBoards, setOpenBoards] = useState(false);
-  console.log(myBoards)
 
   const handleBoardsClick = () => {
     setOpenBoards(!openBoards);
   };
 
   async function createBoard() {
+    setSidebar(false);
+    setIsLoading(true)
     const tempBoard = board
     setBoard({
       id: "",
@@ -39,20 +41,36 @@ export default function Sidebar({ open, setSidebar, board, setBoard, setPrevBoar
     try {
       const status = await createNewBoard();
       if (!status) throw new Error("Error creating board")
-      console.log(status)
       setBoard(prevBoard => ({
         ...prevBoard,
         id: status.id,
       }))
       setPrevBoardName("")
+      setMyBoards(prevBoards => ([...prevBoards, { id: status.id, name: "" }]))
     }
     catch (error) {
       console.log(error)
       setBoard(tempBoard)
+      setMyBoards(prevBoards => prevBoards.slice(0, prevBoards.length - 1))
     }
 
-    setSidebar(false);
+    setIsLoading(false)
   }
+
+  async function getSelectedBoard(boardId) {
+    setSidebar(false);
+    setIsLoading(true)
+    const res = await fetchBoard(boardId);
+    if (!res) return;
+    setBoard({
+      id: res.id,
+      boardName: res.name,
+      tasks: res.tasks,
+    })
+    setPrevBoardName = res.name
+    setIsLoading(false)
+  }
+
 
   return (
     <Drawer anchor="left" open={open} onClose={() => setSidebar(false)}>
@@ -78,9 +96,28 @@ export default function Sidebar({ open, setSidebar, board, setBoard, setPrevBoar
         <Collapse in={openBoards} timeout="auto" unmountOnExit>
           <List sx={{ paddingLeft: 3 }}>
             {myBoards.length > 0 ? (
-              myBoards.map((board) => (
-                <ListItemButton key={board.id} sx={{ "&:hover": { bgcolor: "var(--secondary-color)" } }}>
-                  <ListItemText primary={board.name} sx={{ color: "white" }} />
+              myBoards.map((_board) => (
+                <ListItemButton
+                  key={_board.id}
+                  sx={{
+                    "&:hover": { bgcolor: "var(--secondary-color)" },
+                    borderLeft: 1,
+                    borderColor: "var(--tertiary-color)",
+                    ...(board.id === _board.id && { bgcolor: "var(--tertiary-color)" })
+                  }}
+                  onClick={board.id === _board.id ? () => setSidebar(false) : () => getSelectedBoard(_board.id)}
+                >
+                  <ListItemText
+                    primary={_board.name !== "" ? _board.name : "Untitled"}
+                    sx={{
+                      color: "white",
+                      whiteSpace: "nowrap",
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                      maxWidth: "100%", // Ensures it doesn't exceed the parent container
+                    }}
+                  />
+
                 </ListItemButton>
               ))
             ) : (

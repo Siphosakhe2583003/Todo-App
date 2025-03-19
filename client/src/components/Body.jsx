@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { fetchBoards, fetchLastUsedBoard, getBoardTasks, postTasks, changeCategory, saveBoard, createNewBoard } from "./utils.js";
+import { toast, ToastContainer } from "react-toastify";
 import { IconButton } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 import AddIcon from "@mui/icons-material/AddCircleOutline";
@@ -8,9 +9,11 @@ import Task from "./Task";
 import AddTask from "./AddTask";
 import "../styles/Body.css";
 import Header from "./Header.jsx";
+import Loader from "./Loader.jsx";
 
 export default function Body() {
     const [user, setUser] = useState(null);
+    const [isLoading, setIsLoading] = useState(false);
     const [isEditingBoardName, setIsEditingBoardName] = useState(true)
     const [prevBoardName, setPrevBoardName] = useState("")
     const [board, setBoard] = useState({
@@ -25,16 +28,22 @@ export default function Body() {
     const [myBoards, setMyBoards] = useState([])
 
     useEffect(() => {
+        setIsLoading(true)
         const auth = getAuth();
         const unsubscribe = onAuthStateChanged(auth, (user) => {
             setUser(user ? user : null);
         });
+        setIsLoading(false)
         return () => unsubscribe();
-    }, []);
+    }, [user]);
 
 
     useEffect(() => {
-        if (!user) return;
+        setIsLoading(true)
+        if (!user) {
+            setIsLoading(false)
+            return;
+        }
 
         function findLastUpdatedBoard(boards) {
             if (!boards || boards.length === 0) return null;
@@ -78,6 +87,7 @@ export default function Body() {
         };
 
         fetchMyBoards();
+        setIsLoading(false)
     }, [user]);
 
 
@@ -91,17 +101,20 @@ export default function Body() {
             async function saveNewBoardName(boardId, newName) {
                 if (newName === prevBoardName) return;
 
-                console.log(newName.length, prevBoardName.length);
-
                 const status = await saveBoard(boardId, newName);
-                console.log("saving board name");
 
                 if (!status) {
                     console.error("Failed to change board name");
                     setBoard(prevBoard => ({ ...prevBoard, boardName: prevBoardName }));
                     return;
                 }
-
+                // Updating the name of the board in the boards list, WHY? I am avoiding to fetch the boards again
+                for (let board of myBoards) {
+                    if (board.id === boardId) {
+                        board.name = newName;
+                        break;
+                    }
+                }
                 setPrevBoardName(newName); // Update previous name only if save is successful
             }
             setTimeout(() => saveNewBoardName(board.id, board.boardName.trim()), 0);
@@ -224,7 +237,7 @@ export default function Body() {
 
     return (
         <>
-            <Header board={board} setBoard={setBoard} setPrevBoardName={setPrevBoardName} myBoards={myBoards} setMyBoards={setMyBoards} />
+            <Header board={board} setBoard={setBoard} setPrevBoardName={setPrevBoardName} myBoards={myBoards} setMyBoards={setMyBoards} setIsLoading={setIsLoading} />
             <div className="content">
                 <label>
                     <input
@@ -285,6 +298,8 @@ export default function Body() {
                 </section>
 
                 <AddTask open={openModal} onClose={closeAddTask} addTask={addTask} />
+                <Loader isLoading={isLoading} />
+                <ToastContainer />
             </div>
         </>
     );

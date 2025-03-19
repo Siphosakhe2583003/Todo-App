@@ -34,6 +34,23 @@ async function fetchLastUsedBoard() {
   return null
 }
 
+async function fetchBoard(id) {
+  try {
+    const res = await fetch(`${URL}/boards/${id}`, {
+      method: "GET",
+      credentials: "include",
+    })
+    if (!res.ok) {
+      throw new Error(`Error ${res.status}: ${res.statusText}`)
+    }
+    return await res.json()
+  }
+  catch (error) {
+    console.error(error.message)
+  }
+  return null
+}
+
 async function getBoardTasks(id) {
   try {
     const res = await fetch(`${URL}/boards/${id}/tasks`, {
@@ -163,4 +180,4 @@ async function createNewBoard() {
   return null
 }
 
-export { fetchBoards, fetchLastUsedBoard, getBoardTasks, postTasks, changeCategory, updateTaskContent, removeTask, saveBoard, createNewBoard }
+export { fetchBoards, fetchLastUsedBoard, getBoardTasks, postTasks, changeCategory, updateTaskContent, removeTask, saveBoard, createNewBoard, fetchBoard }
