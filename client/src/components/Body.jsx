@@ -1,15 +1,19 @@
 import React, { useState, useEffect } from "react";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
-import { fetchBoards, fetchLastUsedBoard, getBoardTasks, postTasks, changeCategory, saveBoard } from "./utils.js";
+import { fetchBoards, fetchLastUsedBoard, getBoardTasks, postTasks, changeCategory, saveBoard, createNewBoard } from "./utils.js";
+import { toast, ToastContainer } from "react-toastify";
 import { IconButton } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 import AddIcon from "@mui/icons-material/AddCircleOutline";
 import Task from "./Task";
 import AddTask from "./AddTask";
 import "../styles/Body.css";
+import Header from "./Header.jsx";
+import Loader from "./Loader.jsx";
 
 export default function Body() {
     const [user, setUser] = useState(null);
+    const [isLoading, setIsLoading] = useState(false);
     const [isEditingBoardName, setIsEditingBoardName] = useState(true)
     const [prevBoardName, setPrevBoardName] = useState("")
     const [board, setBoard] = useState({
@@ -21,39 +25,69 @@ export default function Body() {
     const [searchText, setSearchText] = useState("");
     const [openModal, setOpenModal] = useState(false);
     const [selectedCategory, setSelectedCategory] = useState("Todo"); // Tracks category for new task
+    const [myBoards, setMyBoards] = useState([])
 
     useEffect(() => {
+        setIsLoading(true)
         const auth = getAuth();
         const unsubscribe = onAuthStateChanged(auth, (user) => {
             setUser(user ? user : null);
         });
+        setIsLoading(false)
         return () => unsubscribe();
-    }, []);
+    }, [user]);
+
 
     useEffect(() => {
-        if (!user) return;
+        setIsLoading(true)
+        if (!user) {
+            setIsLoading(false)
+            return;
+        }
 
-        const fetchCurrBoard = async () => {
-            const boardData = await fetchLastUsedBoard();
-            if (!boardData) return;
+        function findLastUpdatedBoard(boards) {
+            if (!boards || boards.length === 0) return null;
+            return boards.reduce((latest, board) => {
+                if (!board.updatedAt) return latest;
+                return new Date(board.updatedAt) > new Date(latest.updatedAt) ? board : latest;
+            }, boards[0]);
+        }
 
-            const boardTasks = await getBoardTasks(boardData.id);
-            if (!boardTasks) return;
+        const fetchMyBoards = async () => {
+            const myBoardsData = await fetchBoards();
 
+            if (!myBoardsData || myBoardsData.length === 0) {
+                const newBoard = await createNewBoard();
+                setBoard({
+                    id: newBoard.id,
+                    boardName: "",
+                    tasks: {},
+                });
+                myBoards([newBoard]);
+                return;
+            }
+
+            setMyBoards(myBoardsData);
+
+            const latestUsedBoard = findLastUpdatedBoard(myBoardsData);
+            if (!latestUsedBoard) return;
+
+            const boardTasks = await getBoardTasks(latestUsedBoard.id) || [];
             const formattedTasks = boardTasks.reduce((acc, task) => {
                 acc[task.id] = task;
                 return acc;
             }, {});
 
             setBoard({
-                id: boardData.id,
-                boardName: boardData.name.trim() || "",
-                tasks: formattedTasks,
+                id: latestUsedBoard.id,
+                boardName: latestUsedBoard.name.trim() || "",
+                tasks: formattedTasks || {},
             });
-            setPrevBoardName(boardData.name.trim() || "")
+            setPrevBoardName(latestUsedBoard.name.trim() || "");
         };
 
-        fetchCurrBoard();
+        fetchMyBoards();
+        setIsLoading(false)
     }, [user]);
 
 
@@ -67,17 +101,20 @@ export default function Body() {
             async function saveNewBoardName(boardId, newName) {
                 if (newName === prevBoardName) return;
 
-                console.log(newName.length, prevBoardName.length);
-
                 const status = await saveBoard(boardId, newName);
-                console.log("saving board name");
 
                 if (!status) {
                     console.error("Failed to change board name");
                     setBoard(prevBoard => ({ ...prevBoard, boardName: prevBoardName }));
                     return;
                 }
-
+                // Updating the name of the board in the boards list, WHY? I am avoiding to fetch the boards again
+                for (let board of myBoards) {
+                    if (board.id === boardId) {
+                        board.name = newName;
+                        break;
+                    }
+                }
                 setPrevBoardName(newName); // Update previous name only if save is successful
             }
             setTimeout(() => saveNewBoardName(board.id, board.boardName.trim()), 0);
@@ -199,67 +236,72 @@ export default function Body() {
     }
 
     return (
-        <div className="content">
-            <label>
-                <input
-                    type="text"
-                    value={board.boardName}
-                    placeholder="Enter Board Name"
-                    onChange={(e) => addBoardName(e.target.value)}
-                    onBlur={() => setIsEditingBoardName(false)}
-                    id="board-name"
-                />
-            </label>
+        <>
+            <Header board={board} setBoard={setBoard} setPrevBoardName={setPrevBoardName} myBoards={myBoards} setMyBoards={setMyBoards} setIsLoading={setIsLoading} />
+            <div className="content">
+                <label>
+                    <input
+                        type="text"
+                        value={board.boardName}
+                        placeholder="Enter Board Name"
+                        onChange={(e) => addBoardName(e.target.value)}
+                        onBlur={() => setIsEditingBoardName(false)}
+                        id="board-name"
+                    />
+                </label>
 
-            <div className="search-area">
-                <input
-                    type="text"
-                    value={searchText}
-                    placeholder="Search"
-                    onChange={(e) => setSearchText(e.target.value)}
-                />
-                <IconButton>
-                    <SearchIcon style={{ color: "white" }} />
-                </IconButton>
+                <div className="search-area">
+                    <input
+                        type="text"
+                        value={searchText}
+                        placeholder="Search"
+                        onChange={(e) => setSearchText(e.target.value)}
+                    />
+                    <IconButton>
+                        <SearchIcon style={{ color: "white" }} />
+                    </IconButton>
+                </div>
+
+                <section className="main-body">
+                    {["Todo", "Doing", "Completed"].map((category) => (
+                        <div
+                            key={category}
+                            className="field"
+                            onDrop={(e) => handleOnDrop(e, category)}
+                            onDragOver={handleDragOver}
+                        >
+                            <div className="field-header">
+                                <h3>{category}</h3>
+                                <IconButton className="add-button" onClick={() => toggleAddTask(category)}>
+                                    <AddIcon sx={{ color: "#00ADB5" }} />
+                                </IconButton>
+                            </div>
+                            <div className="todos">
+                                {Object.values(board.tasks)
+                                    .filter((task) => task.type === category)
+                                    .map((task) => (
+                                        <Task
+                                            className="task"
+                                            draggable
+                                            key={task.id}
+                                            id={task.id}
+                                            type={task.type}
+                                            task={task.content}
+                                            board={board}
+                                            setBoard={setBoard}
+                                            handleOnDrag={(e) => handleOnDrag(e, task.id)}
+                                        />
+                                    ))}
+                            </div>
+                        </div>
+                    ))}
+                </section>
+
+                <AddTask open={openModal} onClose={closeAddTask} addTask={addTask} />
+                <Loader isLoading={isLoading} />
+                <ToastContainer />
             </div>
-
-            <section className="main-body">
-                {["Todo", "Doing", "Completed"].map((category) => (
-                    <div
-                        key={category}
-                        className="field"
-                        onDrop={(e) => handleOnDrop(e, category)}
-                        onDragOver={handleDragOver}
-                    >
-                        <div className="field-header">
-                            <h3>{category}</h3>
-                            <IconButton className="add-button" onClick={() => toggleAddTask(category)}>
-                                <AddIcon sx={{ color: "#00ADB5" }} />
-                            </IconButton>
-                        </div>
-                        <div className="todos">
-                            {Object.values(board.tasks)
-                                .filter((task) => task.type === category)
-                                .map((task) => (
-                                    <Task
-                                        className="task"
-                                        draggable
-                                        key={task.id}
-                                        id={task.id}
-                                        type={task.type}
-                                        task={task.content}
-                                        board={board}
-                                        setBoard={setBoard}
-                                        handleOnDrag={(e) => handleOnDrag(e, task.id)}
-                                    />
-                                ))}
-                        </div>
-                    </div>
-                ))}
-            </section>
-
-            <AddTask open={openModal} onClose={closeAddTask} addTask={addTask} />
-        </div>
+        </>
     );
 }
 

@@ -5,7 +5,6 @@
   color: var(--tertiary-color);
   height: 4vh;
   min-height: 60px;
-  border-bottom: 3px solid;
 }
 
 .header-l {
@@ -13,21 +12,24 @@
   margin-left: 0.5rem;
   gap: 15px;
   align-items: center;
-  justify-content: space-between;
+  justify-content: space-evenly;
+  text-align: center;
+  padding-left: 0.5rem;
 }
 
 .header-l a {
+  text-align: center;
   text-decoration: unset;
   color: var(--tertiary-color);
 }
 
 .header-l button {
-  all: unset;
-  cursor: pointer;
+  color: var(--tertiary-color);
+  transform: scale(2);
 }
 
 .header-l button:hover {
-  transform: scale(1.1);
+  transform: scale(2.2);
 }
 
 .header-r #profile {

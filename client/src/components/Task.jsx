@@ -15,7 +15,6 @@ export default function Task({ id, task, handleOnDrag, type, board, setBoard }) 
     async function deleteTask(id) {
         // NOTE: MIGHT WANT TO DISPLAY SOME CONFIRMATION POPUP
         const deletedTask = { ...board.tasks[id] } // NOTE: Need to only store the deleted task only, but since I want to preserve order, this is the only way for now!!!!
-        console.log(deletedTask)
 
         setBoard((prevBoard) => {
             const updatedTasks = { ...prevBoard.tasks }
@@ -26,7 +25,6 @@ export default function Task({ id, task, handleOnDrag, type, board, setBoard }) 
                 tasks: { ...updatedTasks }
             }
         })
-        console.log(board)
         try {
             const status = await removeTask(id, board.id)
             if (!status) throw new Error("Deleting Board Failed")
@@ -87,19 +85,35 @@ export default function Task({ id, task, handleOnDrag, type, board, setBoard }) 
             onDragStart={(e) => handleOnDrag(e, type, task)}
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
+            style={{ position: "relative", padding: "10px", borderRadius: "8px", transition: "background 0.3s" }}
         >
             {task}
 
-            {isHovered && (
-                <div className="task-buttons">
-                    <IconButton onClick={() => setOpenModal(true)}>
-                        <EditIcon />
-                    </IconButton>
-                    <IconButton onClick={() => deleteTask(id)}>
-                        <DeleteIcon />
-                    </IconButton>
-                </div>
-            )}
+            {/* Ensure buttons don't disappear while interacting with them */}
+            <div
+                className="task-buttons"
+                style={{
+                    position: "absolute",
+                    right: "10px",
+                    top: "50%",
+                    transform: "translateY(-50%)",
+                    display: isHovered ? "flex" : "none",
+                    gap: "5px",
+                    background: "rgba(0, 0, 0, 0.7)",
+                    padding: "5px",
+                    borderRadius: "5px",
+                }}
+                onMouseEnter={() => setIsHovered(true)} // Prevents flickering
+                onMouseLeave={() => setIsHovered(false)}
+            >
+                <IconButton onClick={() => setOpenModal(true)} size="small" sx={{ color: "white" }}>
+                    <EditIcon fontSize="small" />
+                </IconButton>
+                <IconButton onClick={() => deleteTask(id)} size="small" sx={{ color: "white" }}>
+                    <DeleteIcon fontSize="small" sx={{ color: "red" }} />
+                </IconButton>
+            </div>
+
             <EditTask open={openModal} onClose={closeModal} editTask={editTask} content={task} />
         </div>
     );
