@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import {
   Drawer,
   List,
@@ -11,14 +11,13 @@ import {
   Typography,
   Divider,
 } from "@mui/material";
-import HomeIcon from "@mui/icons-material/Home";
-import TaskIcon from "@mui/icons-material/Assignment";
 import SettingsIcon from "@mui/icons-material/Settings";
 import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import ExpandLess from "@mui/icons-material/ExpandLess";
 import ExpandMore from "@mui/icons-material/ExpandMore";
 import DashboardIcon from "@mui/icons-material/Dashboard";
+import { PropTypes } from "prop-types";
 import { createNewBoard, fetchBoard } from "./utils.js";
 
 
@@ -147,4 +146,17 @@ export default function Sidebar({ open, setSidebar, board, setBoard, setPrevBoar
     </Drawer>
   );
 }
-
+Sidebar.propTypes = {
+  open: PropTypes.bool.isRequired,
+  setSidebar: PropTypes.func.isRequired,
+  board: PropTypes.shape({
+    id: PropTypes.string.isRequired,
+    boardName: PropTypes.string.isRequired,
+    tasks: PropTypes.array.isRequired,
+  }).isRequired,
+  setBoard: PropTypes.func.isRequired,
+  setPrevBoardName: PropTypes.func.isRequired,
+  myBoards: PropTypes.array.isRequired,
+  setMyBoards: PropTypes.func.isRequired,
+  setIsLoading: PropTypes.func.isRequired,
+};

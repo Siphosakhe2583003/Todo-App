@@ -2,6 +2,18 @@
   padding: 0 1rem;
 }
 
+.title-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.board-name-container {
+  flex-grow: 1;
+  width: 100%
+}
+
 #board-name {
   background: var(--primary-color);
   color: whitesmoke;
@@ -12,6 +24,13 @@
   outline: none;
   font-weight: 600;
   margin: 0.5rem 0;
+  width: 100%;
+}
+
+.title-content .MuiIconButton-root {
+  color: white;
+  /* Ensures the delete icon is visible */
+  margin-left: 10px;
 }
 
 .search-area {

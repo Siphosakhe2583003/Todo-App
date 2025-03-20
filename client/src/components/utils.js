@@ -142,6 +142,22 @@ async function removeTask(taskId, boardId) {
   return null
 }
 
+async function deleteBoardByID(boardId) {
+  try {
+    console.log(boardId, "bid at fetch")
+    const res = await fetch(`${URL}/boards/${boardId}`, {
+      method: "DELETE",
+      credentials: "include",
+    })
+    if (!res.ok) throw new Error(`Error ${res.status}: ${res.statusText}`)
+    return await res.json()
+  }
+  catch (error) {
+    console.error(error)
+  }
+  return null
+}
+
 async function saveBoard(boardId, newBoardName) {
   try {
     const res = await fetch(`${URL}/boards/${boardId}`, {
@@ -180,4 +196,4 @@ async function createNewBoard() {
   return null
 }
 
-export { fetchBoards, fetchLastUsedBoard, getBoardTasks, postTasks, changeCategory, updateTaskContent, removeTask, saveBoard, createNewBoard, fetchBoard }
+export { deleteBoardByID, fetchBoards, fetchLastUsedBoard, getBoardTasks, postTasks, changeCategory, updateTaskContent, removeTask, saveBoard, createNewBoard, fetchBoard }

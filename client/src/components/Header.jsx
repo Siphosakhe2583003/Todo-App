@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import "../config.js";
 import {
   getAuth,
@@ -7,6 +7,7 @@ import {
   onAuthStateChanged,
 } from "firebase/auth";
 import "../styles/Header.css";
+import { PropTypes } from "prop-types";
 import { IconButton, Dialog, DialogTitle, DialogContent, Button, Divider } from "@mui/material";
 import { AccountCircle, Menu } from "@mui/icons-material";
 import Sidebar from "./Sidebar.jsx";
@@ -101,4 +102,17 @@ export default function Header({ board, setBoard, setPrevBoardName, myBoards, se
 
   );
 }
-
+Header.propTypes = {
+  open: PropTypes.bool.isRequired,
+  setSidebar: PropTypes.func.isRequired,
+  board: PropTypes.shape({
+    id: PropTypes.string.isRequired,
+    boardName: PropTypes.string.isRequired,
+    tasks: PropTypes.array.isRequired,
+  }).isRequired,
+  setBoard: PropTypes.func.isRequired,
+  setPrevBoardName: PropTypes.func.isRequired,
+  myBoards: PropTypes.array.isRequired,
+  setMyBoards: PropTypes.func.isRequired,
+  setIsLoading: PropTypes.func.isRequired,
+};

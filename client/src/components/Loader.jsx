@@ -1,5 +1,5 @@
+import { PropTypes } from "prop-types"
 import { motion } from "framer-motion";
-import React from "react";
 
 const overlayStyle = {
   position: "fixed",
@@ -38,5 +38,9 @@ const Loader = ({ isLoading }) => {
     </div>
   );
 };
+
+Loader.propTypes = {
+  isLoading: PropTypes.bool.isRequired,
+}
 
 export default Loader;
