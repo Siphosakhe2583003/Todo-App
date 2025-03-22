@@ -1,11 +1,12 @@
-import React, { useState } from "react";
+import { useState } from "react";
+import { PropTypes } from "prop-types"
 import { Modal, Box, Button, TextField, IconButton } from "@mui/material";
 import CancelIcon from "@mui/icons-material/Cancel"
 
 export default function AddTask({ open, onClose, addTask }) {
   const [taskText, setTaskText] = useState("");
   const [count, setCount] = useState(taskText.length)
-  const MAX_CHARS = 256;
+  const MAX_CHARS = 1024;
 
   const handleUpdate = (e) => {
     const newText = e.target.value;
@@ -67,4 +68,11 @@ export default function AddTask({ open, onClose, addTask }) {
       </Box>
     </Modal>
   );
-} 
+}
+
+
+AddTask.propTypes = {
+  open: PropTypes.bool.isRequired,
+  onClose: PropTypes.func.isRequired,
+  addTask: PropTypes.func.isRequired,
+};

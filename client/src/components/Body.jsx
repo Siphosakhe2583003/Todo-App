@@ -3,7 +3,6 @@ import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { fetchBoards, getBoardTasks, postTasks, changeCategory, saveBoard, createNewBoard, deleteBoardByID } from "./utils.js";
 import { toast, ToastContainer } from "react-toastify";
 import { IconButton } from "@mui/material";
-import SearchIcon from "@mui/icons-material/Search";
 import Delete from "@mui/icons-material/Delete"
 import AddIcon from "@mui/icons-material/AddCircleOutline";
 import Task from "./Task";
@@ -58,7 +57,7 @@ export default function Body() {
       }, boards[0]);
     }
 
-    const fetchMyBoards = async () => {
+    async function fetchMyBoards() {
       const myBoardsData = await fetchBoards();
 
       if (!myBoardsData || myBoardsData.length === 0) {
@@ -90,7 +89,7 @@ export default function Body() {
       });
       setPrevBoardName(latestUsedBoard.name.trim() || "");
     };
-
+    setIsLoading(true);
     fetchMyBoards();
     setIsLoading(false)
   }, [user, refresh]);
@@ -228,7 +227,7 @@ export default function Body() {
         },
       }));
 
-      // TODO: (toast notification, error color change)
+      // TODO: (toast notification, error color and some text use react-toastify)
     }
   }
   function handleDragOver(e) {
@@ -246,7 +245,7 @@ export default function Body() {
       console.log(status)
       if (!status) throw new Error("deleting board failed"); // NOTE: Deleting failed
 
-      // NOTE: I am currently just refreshing the page if the user deletes the current page. In future I must just change the states of the board and boards and just fetch the last updated board after the deletion to avoid fetching the entire board, in fact since I have the entire board, it might be better to just delete the board from the board and just calculate the used board from there(but I am not tracking the last used board in the ui so that might cause some problems)
+      // NOTE: I am currently just refreshing the page if the user deletes the current page. In future I must just change the states of the board and boards and just fetch the last updated board after the deletion to avoid fetching the entire board, in fact since I have the entire board, it might be better to just delete the board from the board and just calculate the recently used board from there(but I am not tracking the last used board in the ui so that might cause some problems)
       setRefresh(prev => !prev)
     }
     catch (error) {
@@ -260,7 +259,22 @@ export default function Body() {
     setConfirmPopup(true);
   };
 
+  const handleSearch = (e) => {
+    const currSearchText = e.target.value.toLowerCase();
+    setSearchText(currSearchText);
 
+    const updatedTasks = {}
+    for (const [key, task] of Object.entries(board.tasks)) {
+      updatedTasks[key] = { ...task, show: task.content.toLowerCase().includes(currSearchText.toLowerCase()) }
+    }
+    console.log(updatedTasks)
+
+    setBoard(prevBoard => ({
+      ...prevBoard,
+      tasks: { ...updatedTasks }
+    }))
+
+  };
 
   return (
     <>
@@ -286,11 +300,13 @@ export default function Body() {
             type="text"
             value={searchText}
             placeholder="Search"
-            onChange={(e) => setSearchText(e.target.value)}
+            onChange={handleSearch}
           />
-          <IconButton onClick={() => deleteBoard(board.id)}>
-            <SearchIcon style={{ color: "white" }} />
-          </IconButton>
+          {
+            //<IconButton onClick={search}>
+            //  <SearchIcon style={{ color: "white" }} />
+            //</IconButton>
+          }
         </div>
 
         <section className="main-body">
@@ -309,7 +325,7 @@ export default function Body() {
               </div>
               <div className="todos">
                 {Object.values(board.tasks)
-                  .filter((task) => task.type === category)
+                  .filter((task) => task.type === category && task.show !== false)
                   .map((task) => (
                     <Task
                       className="task"
@@ -320,6 +336,9 @@ export default function Body() {
                       task={task.content}
                       board={board}
                       setBoard={setBoard}
+                      setMessage={setMessage}
+                      setPopupFunction={setPopupFunction}
+                      setConfirmPopup={setConfirmPopup}
                       handleOnDrag={(e) => handleOnDrag(e, task.id)}
                     />
                   ))}

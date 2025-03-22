@@ -248,12 +248,44 @@ func deleteBoard(c *fiber.Ctx) error {
 		return c.Status(404).SendString("Board not found")
 	}
 
+	err = deleteSubcollections(ctx, docRef)
+	if err != nil {
+		return c.Status(404).SendString("Deleting Failed")
+	}
+
 	_, err = docRef.Delete(ctx)
 	if err != nil {
 		return c.Status(500).SendString("Error deleting board")
 	}
 
 	return c.JSON(fiber.Map{"message": "Board deleted successfully"})
+}
+
+func deleteSubcollections(ctx context.Context, docRef *firestore.DocumentRef) error {
+	collections, err := docRef.Collections(ctx).GetAll()
+	if err != nil {
+		return err
+	}
+
+	for _, col := range collections {
+		docs, err := col.Documents(ctx).GetAll()
+		if err != nil {
+			return err
+		}
+
+		for _, doc := range docs {
+			// Recursively delete subcollections before deleting the document
+			if err := deleteSubcollections(ctx, doc.Ref); err != nil {
+				return err
+			}
+
+			_, err := doc.Ref.Delete(ctx)
+			if err != nil {
+				return err
+			}
+		}
+	}
+	return nil
 }
 
 func updatesLastAccessTime(uid string, boardID string, ctx context.Context) error {
@@ -415,10 +447,15 @@ func main() {
 	app := fiber.New()
 
 	app.Use(cors.New(cors.Config{
-		AllowOrigins:     "http://localhost:5173",
-		AllowMethods:     "GET,POST,DELETE,PUT,OPTIONS",
+		AllowOrigins:     "http://localhost:5173, http://192.168.0.139:5173/",
+		AllowMethods:     "GET,POST,DELETE,PUT,OPTIONS,PATCH",
+		AllowHeaders:     "Content-Type, Authorization",
 		AllowCredentials: true,
 	}))
+	app.Use(func(c *fiber.Ctx) error {
+		c.Set("Cross-Origin-Opener-Policy", "same-origin-allow-popups")
+		return c.Next()
+	})
 
 	// Login and session cookie
 	app.Post("/auth", authHandler)

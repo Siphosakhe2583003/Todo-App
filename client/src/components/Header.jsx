@@ -8,15 +8,15 @@ import {
 } from "firebase/auth";
 import "../styles/Header.css";
 import { PropTypes } from "prop-types";
-import { IconButton, Dialog, DialogTitle, DialogContent, Button, Divider } from "@mui/material";
-import { AccountCircle, Menu } from "@mui/icons-material";
+import { IconButton, Divider } from "@mui/material";
+import { Menu } from "@mui/icons-material";
 import Sidebar from "./Sidebar.jsx";
+import GoogleLogo from "./GoogleLogo.jsx";
 
 const auth = getAuth();
 
 export default function Header({ board, setBoard, setPrevBoardName, myBoards, setMyBoards, setIsLoading }) {
   const [user, setUser] = useState(null);
-  const [open, setOpen] = useState(false); // State for sign-in popup
   const [sidebar, setSidebar] = useState(false);
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
@@ -42,12 +42,13 @@ export default function Header({ board, setBoard, setPrevBoardName, myBoards, se
 
   const signIn = async () => {
     try {
+      setIsLoading(true)
       const provider = new GoogleAuthProvider();
       await signInWithPopup(auth, provider);
-      setOpen(false); // Close modal after login
     } catch (error) {
       console.error("Login failed", error);
     }
+    setIsLoading(false)
   };
 
   return (
@@ -62,7 +63,19 @@ export default function Header({ board, setBoard, setPrevBoardName, myBoards, se
           </h3>
         </div>
         <div className="header-r">
-          {!user && <button onClick={() => setOpen(true)}>Signin</button>}
+          {!user && (
+            <button className="gsi-material-button" onClick={signIn}>
+              <div className="gsi-material-button-state"></div>
+              <div className="gsi-material-button-content-wrapper">
+                <div className="gsi-material-button-icon">
+                  <GoogleLogo />
+                </div>
+                <span className="gsi-material-button-contents">Sign in with Google</span>
+                <span style={{ display: "none" }}>Sign in with Google</span>
+              </div>
+            </button>
+          )}
+
           <IconButton>
             {user ? (
               <img
@@ -71,30 +84,10 @@ export default function Header({ board, setBoard, setPrevBoardName, myBoards, se
                 style={{ width: 40, height: 40, borderRadius: "50%" }}
               />
             ) : (
-              <AccountCircle />
+              <div></div>
             )}
           </IconButton>
         </div>
-
-        <Dialog open={open} onClose={() => setOpen(false)} sx={{ "& .MuiPaper-root": { bgcolor: "var(--primary-color)", color: "white", padding: 2, borderRadius: 2 } }}>
-          <DialogTitle sx={{ textAlign: "center", fontWeight: "bold", color: "var(--tertiary-color)" }}>
-            Sign In
-          </DialogTitle>
-          <DialogContent sx={{ display: "flex", justifyContent: "center", padding: 3 }}>
-            <Button
-              variant="contained"
-              onClick={signIn}
-              sx={{
-                bgcolor: "var(--tertiary-color)",
-                color: "black",
-                fontWeight: "bold",
-                "&:hover": { bgcolor: "var(--secondary-color)", color: "white" },
-              }}
-            >
-              Sign in with Google
-            </Button>
-          </DialogContent>
-        </Dialog>
         <Sidebar open={sidebar} setSidebar={setSidebar} board={board} setBoard={setBoard} setPrevBoardName={setPrevBoardName} myBoards={myBoards} setMyBoards={setMyBoards} setIsLoading={setIsLoading} />
       </div>
       <Divider sx={{ bgcolor: "var(--tertiary-color)", marginY: 1 }} />
@@ -102,13 +95,19 @@ export default function Header({ board, setBoard, setPrevBoardName, myBoards, se
 
   );
 }
+
 Header.propTypes = {
   open: PropTypes.bool.isRequired,
   setSidebar: PropTypes.func.isRequired,
   board: PropTypes.shape({
     id: PropTypes.string.isRequired,
     boardName: PropTypes.string.isRequired,
-    tasks: PropTypes.array.isRequired,
+    tasks: PropTypes.shape({
+      id: PropTypes.string,
+      content: PropTypes.string,
+      createdAt: PropTypes.string,
+      updatedAt: PropTypes.string,
+    })
   }).isRequired,
   setBoard: PropTypes.func.isRequired,
   setPrevBoardName: PropTypes.func.isRequired,

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, } from 'react';
 import { IconButton } from '@mui/material';
 import { updateTaskContent, removeTask } from "./utils.js";
 import { PropTypes } from "prop-types";
@@ -6,16 +6,31 @@ import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditTask from './EditTask';
 
-export default function Task({ id, task, handleOnDrag, type, board, setBoard }) {
+export default function Task({ id, task, handleOnDrag, type, board, setBoard, setMessage, setPopupFunction, setConfirmPopup }) {
   const [isHovered, setIsHovered] = useState(false);
   const [openModal, setOpenModal] = useState(false);
   const [isDragged, setIsDragged] = useState(false);
+
+  const formatText = (text) => {
+    let formattedText = text
+      .replace(/\*(.*?)\*/g, "<b>$1</b>") // *bold*
+      .replace(/_(.*?)_/g, "<i>$1</i>") // _italic_
+      .replace(/~(.*?)~/g, "<s>$1</s>"); // ~strikethrough~
+
+    return formattedText.replace(/\n/g, "<br/>");
+  };
 
   function closeModal() {
     setOpenModal(false);
   }
 
-  async function deleteTask(id) {
+  function handleDeleteTask() {
+    setMessage('Are you sure you want to delete this task? this action can not be undone.')
+    setPopupFunction(() => deleteTask)
+    setConfirmPopup(true)
+  }
+
+  async function deleteTask() {
     const deletedTask = { ...board.tasks[id] };
 
     setBoard((prevBoard) => {
@@ -29,7 +44,7 @@ export default function Task({ id, task, handleOnDrag, type, board, setBoard }) 
 
     try {
       const status = await removeTask(id, board.id);
-      if (!status) throw new Error("Deleting Board Failed");
+      if (!status) throw new Error("Deleting Task Failed");
     } catch (error) {
       console.error(error);
       setBoard(prevBoard => ({
@@ -93,10 +108,14 @@ export default function Task({ id, task, handleOnDrag, type, board, setBoard }) 
         position: "relative",
         padding: "10px",
         borderRadius: "8px",
-        transition: "background 0.3s"
+        transition: "background 0.3s",
+        whiteSpace: "pre-wrap"
       }}
     >
-      {task}
+      <div
+        dangerouslySetInnerHTML={{ __html: formatText(task) }}
+        style={{ whiteSpace: "pre-wrap", color: "white" }}
+      />
 
       <div
         className="task-buttons"
@@ -117,7 +136,7 @@ export default function Task({ id, task, handleOnDrag, type, board, setBoard }) 
         <IconButton onClick={() => setOpenModal(true)} size="small" sx={{ color: "white" }}>
           <EditIcon fontSize="small" />
         </IconButton>
-        <IconButton onClick={() => deleteTask(id)} size="small" sx={{ color: "white" }}>
+        <IconButton onClick={() => handleDeleteTask(id)} size="small" sx={{ color: "white" }}>
           <DeleteIcon fontSize="small" sx={{ color: "red" }} />
         </IconButton>
       </div>
@@ -143,5 +162,8 @@ Task.propTypes = {
   task: PropTypes.string.isRequired,
   handleOnDrag: PropTypes.func.isRequired,
   type: PropTypes.string.isRequired,
+  setMessage: PropTypes.func.isRequired,
+  setPopupFunction: PropTypes.func.isRequired,
+  setConfirmPopup: PropTypes.func.isRequired,
 };
 
