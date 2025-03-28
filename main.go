@@ -248,12 +248,44 @@ func deleteBoard(c *fiber.Ctx) error {
 		return c.Status(404).SendString("Board not found")
 	}
 
+	err = deleteSubcollections(ctx, docRef)
+	if err != nil {
+		return c.Status(404).SendString("Deleting Failed")
+	}
+
 	_, err = docRef.Delete(ctx)
 	if err != nil {
 		return c.Status(500).SendString("Error deleting board")
 	}
 
 	return c.JSON(fiber.Map{"message": "Board deleted successfully"})
+}
+
+func deleteSubcollections(ctx context.Context, docRef *firestore.DocumentRef) error {
+	collections, err := docRef.Collections(ctx).GetAll()
+	if err != nil {
+		return err
+	}
+
+	for _, col := range collections {
+		docs, err := col.Documents(ctx).GetAll()
+		if err != nil {
+			return err
+		}
+
+		for _, doc := range docs {
+			// Recursively delete subcollections before deleting the document
+			if err := deleteSubcollections(ctx, doc.Ref); err != nil {
+				return err
+			}
+
+			_, err := doc.Ref.Delete(ctx)
+			if err != nil {
+				return err
+			}
+		}
+	}
+	return nil
 }
 
 func updatesLastAccessTime(uid string, boardID string, ctx context.Context) error {
@@ -272,8 +304,9 @@ func addTask(c *fiber.Ctx) error {
 	ctx := context.Background()
 
 	var task struct {
-		Content string `json:"content"`
-		Type    string `json:"type"` // "Todo", "Doing", "Done"
+		Content  string `json:"content"`
+		Type     string `json:"type"`     // "Todo", "Doing", "Done"
+		Priority string `json:"priority"` // "Low", "Medium", "High"
 	}
 	if err := json.Unmarshal(c.Body(), &task); err != nil {
 		return c.Status(400).SendString("Invalid request body")
@@ -291,6 +324,7 @@ func addTask(c *fiber.Ctx) error {
 	formatedTask := map[string]interface{}{
 		"content":   task.Content,
 		"type":      task.Type,
+		"priority":  task.Priority,
 		"createdAt": time.Now(),
 	}
 	docRef, _, err := firestoreDB.Collection("users").Doc(uid).Collection("boards").Doc(boardID).Collection("tasks").Add(ctx, formatedTask)
@@ -327,7 +361,8 @@ func editTaskContent(c *fiber.Ctx) error {
 	ctx := context.Background()
 
 	var task struct {
-		Content string `json:"content"`
+		Content  string `json:"content"`
+		Priority string `json:"priority"`
 	}
 
 	if err := json.Unmarshal(c.Body(), &task); err != nil {
@@ -342,6 +377,7 @@ func editTaskContent(c *fiber.Ctx) error {
 
 	_, err = docRef.Update(ctx, []firestore.Update{
 		{Path: "content", Value: task.Content},
+		{Path: "priority", Value: task.Priority},
 	})
 
 	if err != nil {
@@ -415,10 +451,15 @@ func main() {
 	app := fiber.New()
 
 	app.Use(cors.New(cors.Config{
-		AllowOrigins:     "http://localhost:5173",
-		AllowMethods:     "GET,POST,DELETE,PUT,OPTIONS",
+		AllowOrigins:     "http://localhost:5173, http://192.168.0.139:5173/",
+		AllowMethods:     "GET,POST,DELETE,PUT,OPTIONS,PATCH",
+		AllowHeaders:     "Content-Type, Authorization",
 		AllowCredentials: true,
 	}))
+	app.Use(func(c *fiber.Ctx) error {
+		c.Set("Cross-Origin-Opener-Policy", "same-origin-allow-popups")
+		return c.Next()
+	})
 
 	// Login and session cookie
 	app.Post("/auth", authHandler)

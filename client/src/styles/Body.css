@@ -2,6 +2,18 @@
   padding: 0 1rem;
 }
 
+.title-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.board-name-container {
+  flex-grow: 1;
+  width: 100%
+}
+
 #board-name {
   background: var(--primary-color);
   color: whitesmoke;
@@ -12,6 +24,12 @@
   outline: none;
   font-weight: 600;
   margin: 0.5rem 0;
+  width: 100%;
+}
+
+.title-content .MuiIconButton-root {
+  color: white;
+  margin-left: 10px;
 }
 
 .search-area {
@@ -31,6 +49,7 @@
   font-size: medium;
   border: none;
   padding: 1rem 0;
+  padding-right: 2px;
   outline: none;
   font-weight: 500;
   margin-left: 1rem;
@@ -75,6 +94,7 @@
 }
 
 .field-header h3 {
+  font-weight: bolder;
   margin-left: 1rem;
   color: var(--tertiary-color);
 }
@@ -140,10 +160,97 @@
   margin: 0;
 }
 
+
+/* Style the Select input */
+#priority-dropdown {
+  min-width: 120px;
+  background-color: var(--secondary-color);
+  color: white;
+  border: 2px solid var(--primary-color);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px;
+  transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+#priority-dropdown:focus {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 5px var(--primary-color);
+}
+
+#priority-label {
+  color: var(--tertiary-color);
+}
+
+/* Flex container for selected value */
+.priority-selected {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Style the dropdown menu */
+.MuiMenu-paper {
+  background-color: var(--secondary-color) !important;
+  border: 1px solid var(--primary-color);
+  border-radius: 8px;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+/* Style the menu items */
+.priority-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px;
+  transition: background 0.2s;
+}
+
+/* Highlight selected option */
+.MuiMenuItem-root.Mui-selected {
+  background-color: var(--primary-color) !important;
+  color: white !important;
+}
+
+/* Menu item hover effect */
+.priority-option:hover {
+  background-color: rgba(255, 255, 255, 0.3);
+}
+
+/* Colored blocks for priority indicators */
+.priority-color {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+}
+
+/* Specific colors */
+.high-color {
+  background-color: red;
+}
+
+.priority-tag {
+  background-color: var(--secondary-color);
+  border-radius: 8px;
+  margin-top: 1rem;
+  padding: 0.2rem;
+  width: fit-content;
+}
+
+.medium-color {
+  background-color: orange;
+}
+
+.low-color {
+  background-color: lightblue;
+}
+
 .modal-buttons {
   display: flex;
   margin: 1rem;
-  justify-content: end;
+  justify-content: space-between;
+  align-items: center;
 }
 
 .save-button {
@@ -157,6 +264,13 @@
 .task {
   background-color: var(--primary-color);
   padding: 0.5rem;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.8rem;
   border-radius: 10px;
+  font-size: 18px;
+}
+
+.task:active {
+  background-color: var(--tertiary-color);
+  opacity: 0.5;
+  scale: 1.01;
 }
