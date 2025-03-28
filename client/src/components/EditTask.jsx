@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { FormControl, Modal, Box, Button, TextField, IconButton, InputLabel, MenuItem, Select } from "@mui/material";
 import CancelIcon from "@mui/icons-material/Cancel"
 import { PropTypes } from "prop-types"
@@ -13,6 +13,17 @@ export default function EditTask({ open, onClose, editTask, content, priority })
     MEDIUM: "medium-color",
     LOW: "low-color",
   };
+
+  const callbackRef = useCallback(inputElement => {
+    console.log(inputElement)
+    if (inputElement) {
+      setTimeout(() => {
+        inputElement.focus()
+        inputElement.setSelectionRange(taskText.length, taskText.length)
+      }, 0);
+      console.log("theres an element")
+    }
+  }, []);
 
   const handleUpdate = (e) => {
     const newText = e.target.value;
@@ -40,13 +51,14 @@ export default function EditTask({ open, onClose, editTask, content, priority })
           <h3 id="modal-title">Edit Task</h3>
           <IconButton onClick={onClose}>
             <CancelIcon sx={{
-              color: '#00ADB5',
+              color: 'var(--tertiary-color)',
             }}></CancelIcon>
           </IconButton>
         </Box>
         <Box className="modal-body">
           <TextField
             multiline
+            inputRef={callbackRef}
             className="task-input"
             placeholder="Add your task..."
             value={taskText}
@@ -88,15 +100,15 @@ export default function EditTask({ open, onClose, editTask, content, priority })
           <Button
             onClick={save}
             variant="contained"
-            color="#101218"
+            color="var(--tertiary-color)"
             sx={{
               '&:hover': {
-                backgroundColor: '#00ADB5',
+                backgroundColor: "var(--tertiary-color)",
               },
               '&:active': {
-                backgroundColor: 'lightblue',
+                backgroundColor: "var(--primary-color)",
               },
-              border: "2px solid #00ADB5"
+              border: "2px solid var(--tertiary-color)"
             }}
           >
             Save

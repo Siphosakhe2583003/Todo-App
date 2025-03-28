@@ -4,6 +4,7 @@ node_modules
 *.o
 *.a
 *.so
+.env
 
 _obj
 _test
@@ -16,4 +17,5 @@ tmp/
 /bin/
 
 client/src/config.js
+client/.env
 serviceAccountKey.json

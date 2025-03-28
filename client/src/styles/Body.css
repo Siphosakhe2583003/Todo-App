@@ -94,6 +94,7 @@
 }
 
 .field-header h3 {
+  font-weight: bolder;
   margin-left: 1rem;
   color: var(--tertiary-color);
 }
@@ -214,7 +215,7 @@
 
 /* Menu item hover effect */
 .priority-option:hover {
-  background-color: rgba(255, 255, 255, 0.1);
+  background-color: rgba(255, 255, 255, 0.3);
 }
 
 /* Colored blocks for priority indicators */
@@ -227,6 +228,14 @@
 /* Specific colors */
 .high-color {
   background-color: red;
+}
+
+.priority-tag {
+  background-color: var(--secondary-color);
+  border-radius: 8px;
+  margin-top: 1rem;
+  padding: 0.2rem;
+  width: fit-content;
 }
 
 .medium-color {
@@ -258,4 +267,10 @@
   margin-bottom: 0.8rem;
   border-radius: 10px;
   font-size: 18px;
+}
+
+.task:active {
+  background-color: var(--tertiary-color);
+  opacity: 0.5;
+  scale: 1.01;
 }

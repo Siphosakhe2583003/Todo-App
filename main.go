@@ -304,8 +304,9 @@ func addTask(c *fiber.Ctx) error {
 	ctx := context.Background()
 
 	var task struct {
-		Content string `json:"content"`
-		Type    string `json:"type"` // "Todo", "Doing", "Done"
+		Content  string `json:"content"`
+		Type     string `json:"type"`     // "Todo", "Doing", "Done"
+		Priority string `json:"priority"` // "Low", "Medium", "High"
 	}
 	if err := json.Unmarshal(c.Body(), &task); err != nil {
 		return c.Status(400).SendString("Invalid request body")
@@ -323,6 +324,7 @@ func addTask(c *fiber.Ctx) error {
 	formatedTask := map[string]interface{}{
 		"content":   task.Content,
 		"type":      task.Type,
+		"priority":  task.Priority,
 		"createdAt": time.Now(),
 	}
 	docRef, _, err := firestoreDB.Collection("users").Doc(uid).Collection("boards").Doc(boardID).Collection("tasks").Add(ctx, formatedTask)
@@ -359,7 +361,8 @@ func editTaskContent(c *fiber.Ctx) error {
 	ctx := context.Background()
 
 	var task struct {
-		Content string `json:"content"`
+		Content  string `json:"content"`
+		Priority string `json:"priority"`
 	}
 
 	if err := json.Unmarshal(c.Body(), &task); err != nil {
@@ -374,6 +377,7 @@ func editTaskContent(c *fiber.Ctx) error {
 
 	_, err = docRef.Update(ctx, []firestore.Update{
 		{Path: "content", Value: task.Content},
+		{Path: "priority", Value: task.Priority},
 	})
 
 	if err != nil {

@@ -118,13 +118,18 @@ export default function Task({ id, task, handleOnDrag, type, board, setBoard, se
         padding: "10px",
         borderRadius: "8px",
         transition: "background 0.3s",
-        whiteSpace: "pre-wrap"
+        whiteSpace: "pre-wrap",
+        //background: isDragged ? `${priorityColors[board.tasks[id].priority]}` : "var(--primary-color)",
       }}
     >
       <div
         dangerouslySetInnerHTML={{ __html: formatText(task) }}
         style={{ whiteSpace: "pre-wrap", color: "white" }}
       />
+
+      <div className="priority-tag" style={{ color: priorityColors[board.tasks[id].priority] }}>
+        {board.tasks[id].priority} PRIORITY
+      </div>
 
       <div
         className="task-buttons"
@@ -135,7 +140,8 @@ export default function Task({ id, task, handleOnDrag, type, board, setBoard, se
           transform: "translateY(-50%)",
           display: (isHovered && !isDragged) ? "flex" : "none",
           gap: "0px",
-          background: "rgba(0, 0, 0, 0.7)",
+          background: "var(--secondary-color)",
+          opacity: 0.95,
           padding: "5px",
           borderRadius: "5px"
         }}

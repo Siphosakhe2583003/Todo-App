@@ -18,6 +18,7 @@
 
 .header-l a {
   text-align: center;
+  font-size: 1.1rem;
   text-decoration: unset;
   color: var(--tertiary-color);
 }

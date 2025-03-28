@@ -30,6 +30,12 @@ export default function Body() {
   const [message, setMessage] = useState("")
   const [popupFunction, setPopupFunction] = useState(() => () => null);
   const [refresh, setRefresh] = useState(false);
+  const priorityColors = {
+    HIGH: "high-color",
+    MEDIUM: "medium-color",
+    LOW: "low-color",
+  };
+
 
   useEffect(() => {
     setIsLoading(true)
@@ -40,7 +46,6 @@ export default function Body() {
     setIsLoading(false)
     return () => unsubscribe();
   }, [user]);
-
 
   useEffect(() => {
     setIsLoading(true)
@@ -188,6 +193,7 @@ export default function Body() {
   };
 
   function addBoardName(name) {
+    setCategoryState({ "Todo": false, "Doing": false, "Completed": false })
     setIsEditingBoardName(true)
     setBoard((prevBoard) => ({
       ...prevBoard,
@@ -196,6 +202,7 @@ export default function Body() {
   }
 
   async function handleOnDrop(e, dropCategory) {
+    setCategoryState({ "Todo": false, "Doing": false, "Completed": false })
     const taskId = e.dataTransfer.getData("taskId");
     const task = board.tasks[taskId];
 
@@ -231,8 +238,15 @@ export default function Body() {
       // TODO: (toast notification, error color and some text use react-toastify)
     }
   }
-  function handleDragOver(e) {
+
+  const [categoryState, setCategoryState] = useState({ "Todo": false, "Doing": false, "Completed": false })
+
+  function handleDragOver(e, category) {
     e.preventDefault();
+    setCategoryState((prev) => ({
+      ...Object.fromEntries(Object.keys(prev).map((key) => [key, false])), // Reset all to false
+      [category]: true, // Set the current category to true
+    }));
   }
 
   function handleOnDrag(e, taskId) {
@@ -240,10 +254,8 @@ export default function Body() {
   }
 
   async function deleteBoard() {
-    console.log(board.id, "hello")
     try {
       const status = await deleteBoardByID(board.id)
-      console.log(status)
       if (!status) throw new Error("deleting board failed"); // NOTE: Deleting failed
 
       // NOTE: I am currently just refreshing the page if the user deletes the current page. In future I must just change the states of the board and boards and just fetch the last updated board after the deletion to avoid fetching the entire board, in fact since I have the entire board, it might be better to just delete the board from the board and just calculate the recently used board from there(but I am not tracking the last used board in the ui so that might cause some problems)
@@ -268,7 +280,6 @@ export default function Body() {
     for (const [key, task] of Object.entries(board.tasks)) {
       updatedTasks[key] = { ...task, show: task.content.toLowerCase().includes(currSearchText.toLowerCase()) }
     }
-    console.log(updatedTasks)
 
     setBoard(prevBoard => ({
       ...prevBoard,
@@ -311,12 +322,14 @@ export default function Body() {
               key={category}
               className="field"
               onDrop={(e) => handleOnDrop(e, category)}
-              onDragOver={handleDragOver}
+              onDragOver={(e) => handleDragOver(e, category)}
+              onDragLeave={() => setCategoryState({ "Todo": false, "Doing": false, "Completed": false })}
+              style={{ backgroundColor: categoryState[category] ? "var(--tertiary-color)" : "", transition: "background-color 0.1s", opacity: categoryState[category] ? 0.7 : 1 }}
             >
-              <div className="field-header">
-                <h3>{category}</h3>
+              <div className="field-header" style={{ backgroundColor: categoryState[category] ? "var(--tertiary-color)" : "", transition: "background-color 0.1s", opacity: categoryState[category] ? 0.7 : 1 }}>
+                <h3>{category.toUpperCase()}</h3>
                 <IconButton className="add-button" onClick={() => toggleAddTask(category)}>
-                  <AddIcon sx={{ color: "#00ADB5" }} />
+                  <AddIcon sx={{ color: "var(--tertiary-color)" }} />
                 </IconButton>
               </div>
               <div className="todos">
@@ -324,7 +337,7 @@ export default function Body() {
                   .filter((task) => task.type === category && task.show !== false)
                   .map((task) => (
                     <Task
-                      className="task"
+                      className="tasks"
                       draggable
                       key={task.id}
                       id={task.id}
