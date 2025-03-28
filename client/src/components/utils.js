@@ -108,12 +108,15 @@ async function changeCategory(taskId, boardId, category) {
   return null
 }
 
-async function updateTaskContent(taskId, boardId, content) {
+async function updateTaskContent(taskId, boardId, content, newPriority) {
   try {
     const res = await fetch(`${URL}/boards/${boardId}/tasks/${taskId}`, {
       method: "PUT",
       credentials: "include",
-      body: JSON.stringify({ "content": content })
+      body: JSON.stringify({
+        "content": content,
+        priority: newPriority,
+      })
     })
     if (!res.ok) {
       console.log(res)

@@ -11,6 +11,7 @@ export default function Task({ id, task, handleOnDrag, type, board, setBoard, se
   const [openModal, setOpenModal] = useState(false);
   const [isDragged, setIsDragged] = useState(false);
 
+  // To support bold, italic, and strikethrough text like whatsapp
   const formatText = (text) => {
     let formattedText = text
       .replace(/\*(.*?)\*/g, "<b>$1</b>") // *bold*
@@ -18,6 +19,12 @@ export default function Task({ id, task, handleOnDrag, type, board, setBoard, se
       .replace(/~(.*?)~/g, "<s>$1</s>"); // ~strikethrough~
 
     return formattedText.replace(/\n/g, "<br/>");
+  };
+
+  const priorityColors = {
+    HIGH: "red",
+    MEDIUM: "orange",
+    LOW: "lightblue",
   };
 
   function closeModal() {
@@ -57,8 +64,8 @@ export default function Task({ id, task, handleOnDrag, type, board, setBoard, se
     }
   }
 
-  async function editTask(newContent) {
-    if (task === newContent) {
+  async function editTask(newContent, newPriority) {
+    if (task === newContent && board.tasks[id].priority === newPriority) {
       return;
     }
 
@@ -70,12 +77,13 @@ export default function Task({ id, task, handleOnDrag, type, board, setBoard, se
         [id]: {
           ...prevBoard.tasks[id],
           content: newContent,
+          priority: newPriority,
         }
       }
     }));
 
     try {
-      const res = await updateTaskContent(id, board.id, newContent);
+      const res = await updateTaskContent(id, board.id, newContent, newPriority);
       if (!res) throw new Error("Board or task not found");
     } catch (error) {
       console.error(error);
@@ -105,6 +113,7 @@ export default function Task({ id, task, handleOnDrag, type, board, setBoard, se
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       style={{
+        borderLeft: `5px solid ${priorityColors[board.tasks[id].priority]}`,
         position: "relative",
         padding: "10px",
         borderRadius: "8px",
@@ -141,8 +150,8 @@ export default function Task({ id, task, handleOnDrag, type, board, setBoard, se
         </IconButton>
       </div>
 
-      <EditTask open={openModal} onClose={closeModal} editTask={editTask} content={task} />
-    </div>
+      <EditTask open={openModal} onClose={closeModal} editTask={editTask} content={task} priority={board.tasks[id].priority} />
+    </div >
   );
 }
 

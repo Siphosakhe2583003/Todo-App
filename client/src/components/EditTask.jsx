@@ -1,12 +1,18 @@
 import { useState } from "react";
-import { Modal, Box, Button, TextField, IconButton } from "@mui/material";
+import { FormControl, Modal, Box, Button, TextField, IconButton, InputLabel, MenuItem, Select } from "@mui/material";
 import CancelIcon from "@mui/icons-material/Cancel"
 import { PropTypes } from "prop-types"
 
-export default function EditTask({ open, onClose, editTask, content }) {
+export default function EditTask({ open, onClose, editTask, content, priority }) {
   const [taskText, setTaskText] = useState(content);
+  const [taskPriority, setTaskPriority] = useState(priority || "LOW");
   const [count, setCount] = useState(taskText.length)
   const MAX_CHARS = 1024;
+  const priorityColors = {
+    HIGH: "high-color",
+    MEDIUM: "medium-color",
+    LOW: "low-color",
+  };
 
   const handleUpdate = (e) => {
     const newText = e.target.value;
@@ -15,10 +21,15 @@ export default function EditTask({ open, onClose, editTask, content }) {
     setCount(newText.length);
   };
 
+  const handlePriority = (e) => {
+    setTaskPriority(e.target.value);
+    console.log(taskPriority)
+  }
+
   const save = () => {
     // NOTE: Think about it later, must be able to save the task in a convinient way
     if (taskText.trim() === "") return;
-    editTask(taskText);
+    editTask(taskText, taskPriority);
     onClose();
   };
 
@@ -46,6 +57,34 @@ export default function EditTask({ open, onClose, editTask, content }) {
 
         </Box>
         <Box className="modal-buttons">
+          <FormControl className="modal-priority">
+            <Box>
+              <InputLabel id="priority-label">Priority</InputLabel >
+              <Select
+                labelId="priority-label"
+                id="priority-dropdown"
+                value={taskPriority}
+                onChange={handlePriority}
+                label="Priority"
+                renderValue={(selected) => (
+                  <div className="priority-selected">
+                    <span className={`priority-color ${priorityColors[selected]}`}></span>
+                    {selected.charAt(0) + selected.slice(1).toLowerCase()} {/* Capitalize */}
+                  </div>
+                )}
+              >
+                <MenuItem value={"HIGH"} className="priority-option">
+                  <span className="priority-color high-color"></span> High
+                </MenuItem>
+                <MenuItem value={"MEDIUM"} className="priority-option">
+                  <span className="priority-color medium-color"></span> Medium
+                </MenuItem>
+                <MenuItem value={"LOW"} className="priority-option">
+                  <span className="priority-color low-color"></span> Low
+                </MenuItem>
+              </Select>
+            </Box>
+          </FormControl>
           <Button
             onClick={save}
             variant="contained"
@@ -73,4 +112,5 @@ EditTask.propTypes = {
   onClose: PropTypes.func.isRequired,
   editTask: PropTypes.func.isRequired,
   content: PropTypes.string,
+  priority: PropTypes.string,
 };

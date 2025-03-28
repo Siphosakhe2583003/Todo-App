@@ -1,12 +1,18 @@
 import { useState } from "react";
 import { PropTypes } from "prop-types"
-import { Modal, Box, Button, TextField, IconButton } from "@mui/material";
+import { FormControl, Modal, Box, Button, TextField, IconButton, InputLabel, MenuItem, Select } from "@mui/material";
 import CancelIcon from "@mui/icons-material/Cancel"
 
 export default function AddTask({ open, onClose, addTask }) {
   const [taskText, setTaskText] = useState("");
+  const [taskPriority, setTaskPriority] = useState("LOW");
   const [count, setCount] = useState(taskText.length)
   const MAX_CHARS = 1024;
+  const priorityColors = {
+    HIGH: "high-color",
+    MEDIUM: "medium-color",
+    LOW: "low-color",
+  };
 
   const handleUpdate = (e) => {
     const newText = e.target.value;
@@ -16,9 +22,13 @@ export default function AddTask({ open, onClose, addTask }) {
     setCount(newText.length);
   };
 
+  const handlePriority = (e) => {
+    setTaskPriority(e.target.value);
+  }
+
   const save = () => {
     if (taskText.trim() === "") return;
-    addTask(taskText);
+    addTask(taskText, taskPriority);
     setTaskText(""); // Clear input after saving
     setCount(0);
     onClose();
@@ -48,6 +58,34 @@ export default function AddTask({ open, onClose, addTask }) {
 
         </Box>
         <Box className="modal-buttons">
+          <FormControl className="modal-priority">
+            <Box>
+              <InputLabel id="priority-label">Priority</InputLabel >
+              <Select
+                labelId="priority-label"
+                id="priority-dropdown"
+                value={taskPriority}
+                onChange={handlePriority}
+                label="Priority"
+                renderValue={(selected) => (
+                  <div className="priority-selected">
+                    <span className={`priority-color ${priorityColors[selected]}`}></span>
+                    {selected.charAt(0) + selected.slice(1).toLowerCase()} {/* Capitalize */}
+                  </div>
+                )}
+              >
+                <MenuItem value={"HIGH"} className="priority-option">
+                  <span className="priority-color high-color"></span> High
+                </MenuItem>
+                <MenuItem value={"MEDIUM"} className="priority-option">
+                  <span className="priority-color medium-color"></span> Medium
+                </MenuItem>
+                <MenuItem value={"LOW"} className="priority-option">
+                  <span className="priority-color low-color"></span> Low
+                </MenuItem>
+              </Select>
+            </Box>
+          </FormControl>
           <Button
             onClick={save}
             variant="contained"

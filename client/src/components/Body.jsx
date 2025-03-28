@@ -134,12 +134,13 @@ export default function Body() {
     setOpenModal(false);
   }
 
-  const addTask = async (content) => {
+  const addTask = async (content, taskPriority) => {
     const tempId = Date.now().toString();
 
     const task = {
       content: content,
       type: selectedCategory,
+      priority: taskPriority,
     };
 
     // Optimistically update the UI
@@ -302,11 +303,6 @@ export default function Body() {
             placeholder="Search"
             onChange={handleSearch}
           />
-          {
-            //<IconButton onClick={search}>
-            //  <SearchIcon style={{ color: "white" }} />
-            //</IconButton>
-          }
         </div>
 
         <section className="main-body">
