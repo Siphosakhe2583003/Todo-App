@@ -67,7 +67,7 @@ func authHandler(c *fiber.Ctx) error {
 		Expires:  time.Now().Add(24 * time.Hour),
 		HTTPOnly: true,
 		Secure:   true,
-		SameSite: "Strict",
+		SameSite: "None",
 	})
 
 	return c.JSON(fiber.Map{"message": "Login successful", "uid": token.UID})
@@ -451,7 +451,7 @@ func main() {
 	app := fiber.New()
 
 	app.Use(cors.New(cors.Config{
-		AllowOrigins:     "http://localhost:5173, http://192.168.0.139:5173/",
+		AllowOrigins:     "https://go-do.web.app, http://localhost:5173, http://192.168.0.139:5173/, http://localhost:5000",
 		AllowMethods:     "GET,POST,DELETE,PUT,OPTIONS,PATCH",
 		AllowHeaders:     "Content-Type, Authorization",
 		AllowCredentials: true,

@@ -205,6 +205,7 @@
   gap: 10px;
   padding: 8px;
   transition: background 0.2s;
+  color: var(--tertiary-color) !important;
 }
 
 /* Highlight selected option */

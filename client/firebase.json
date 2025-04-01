@@ -1,6 +1,7 @@
 {
   "hosting": {
     "source": ".",
+    "site": "go-do",
     "ignore": [
       "firebase.json",
       "**/.*",
@@ -8,14 +9,6 @@
     ],
     "frameworksBackend": {
       "region": "europe-west1"
-    },
-    "headers": [
-      {
-        "source": "/**",
-        "headers": [
-          { "key": "Cross-Origin-Opener-Policy", "value": "same-origin-allow-popups" }
-        ]
-      }
-    ] 
+    }
   }
 }
