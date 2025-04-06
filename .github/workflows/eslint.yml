@@ -39,6 +39,7 @@ jobs:
           SARIF_ESLINT_IGNORE_SUPPRESSED: "true"
         run: |
           cd client
+          touch eslint-results.sarif
           npx eslint . --config .eslintrc.js
 
       - name: Check ESLint Output
