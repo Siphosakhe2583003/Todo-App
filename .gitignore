@@ -16,8 +16,8 @@ tmp/
 
 /bin/
 
-./client/src/config.js
-./client/.env
-./client/dist/
+/client/src/config.js
+/client/.env
+/client/dist/
 
 serviceAccountKey.json

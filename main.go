@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"env"
 	"fmt"
 	"log"
 	"math"
@@ -448,6 +449,12 @@ func deleteTask(c *fiber.Ctx) error {
 func main() {
 	initFirebase()
 
+	if err := env.Load(); err != nil {
+		log.Fatalf("Error loading .env file")
+	}
+
+	var PORT = env.Get("$PORT")
+
 	app := fiber.New()
 
 	app.Use(cors.New(cors.Config{
@@ -481,5 +488,5 @@ func main() {
 	api.Delete("/boards/:bid/tasks/:id", deleteTask)
 
 	// Start server
-	log.Fatal(app.Listen(":3000"))
+	log.Fatal(app.Listen(PORT))
 }

@@ -1,0 +1,26 @@
+# Ignore Air's temporary build files
+/tmp/
+tmp/
+tmp/*
+
+# Ignore compiled binaries and build artifacts
+*.exe
+*.out
+*.a
+*.so
+*.dll
+bin/
+pkg/
+
+# Ignore Node.js dependencies (if using frontend)
+node_modules/
+dist/
+client/
+
+# Ignore local environment variables & secrets
+.env
+
+# Ignore Git-related files
+.git/
+.gitignore
+
