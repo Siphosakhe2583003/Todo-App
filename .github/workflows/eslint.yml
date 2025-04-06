@@ -39,9 +39,7 @@ jobs:
           SARIF_ESLINT_IGNORE_SUPPRESSED: "true"
         run: |
           cd client
-          npx eslint . --config .eslintrc.js --ext .js,.jsx,.ts,.tsx \
-            --format @microsoft/eslint-formatter-sarif \
-            --output-file eslint-results.sarif || true
+          npx eslint . --config .eslintrc.js
 
       - name: Check ESLint Output
         run: cat client/eslint-results.sarif || echo "No ESLint SARIF output generated"
