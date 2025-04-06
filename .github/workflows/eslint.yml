@@ -40,7 +40,7 @@ jobs:
         run: |
           cd client
           touch eslint-results.sarif
-          npx eslint . --config .eslintrc.js
+          npx eslint . --config eslint.config.js
 
       - name: Check ESLint Output
         run: cat client/eslint-results.sarif || echo "No ESLint SARIF output generated"
