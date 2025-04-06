@@ -1,9 +1,6 @@
-root = "."
-tmp_dir = "tmp"
-
 [build]
 bin = "main"
-cmd = "go build -o {{.Output}} {{.Input}}"
-exclude = ["tmp/*", "client/**"]
+cmd = "go run main.go"
+exclude_dir = ["tmp/*", "client/**", "node_modules/*, node_modules"]
 include = ["**/*.go"]
-ignore = ["tmp/*", "client/*"]
+ignore = ["tmp/*", "client/*", "node_modules/*, node_modules"]

@@ -14,14 +14,13 @@ export default function EditTask({ open, onClose, editTask, content, priority })
     LOW: "low-color",
   };
 
+  // NOTE: This is a hacky way to focus the input field after the modal opens
   const callbackRef = useCallback(inputElement => {
-    console.log(inputElement)
     if (inputElement) {
       setTimeout(() => {
         inputElement.focus()
         inputElement.setSelectionRange(taskText.length, taskText.length)
       }, 0);
-      console.log("theres an element")
     }
   }, []);
 
