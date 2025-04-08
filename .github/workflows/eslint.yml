@@ -41,9 +41,11 @@ jobs:
           cd client
           npx eslint . --config eslint.config.js -o eslint-results.sarif
 
-      - name: Check ESLint Output
-        run: cat client/eslint-results.sarif || echo "No ESLint SARIF output generated"
-
+      - name: Check ESLint Output and formatting the ESLint Output
+        run: |
+          cat client/eslint-results.sarif || echo "No ESLint SARIF output generated"
+          npx eslint . -f @microsoft/eslint-formatter-sarif -o client/eslint-results.sarif
+          
       - name: Upload analysis results to GitHub
         uses: github/codeql-action/upload-sarif@v3
         with:
