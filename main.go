@@ -3,10 +3,10 @@ package main
 import (
 	"context"
 	"encoding/json"
-	"env"
 	"fmt"
 	"log"
 	"math"
+	"os"
 	"time"
 
 	"cloud.google.com/go/firestore"
@@ -14,6 +14,7 @@ import (
 	"firebase.google.com/go/auth"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
+	"github.com/joho/godotenv"
 	"google.golang.org/api/option"
 )
 
@@ -449,12 +450,11 @@ func deleteTask(c *fiber.Ctx) error {
 func main() {
 	initFirebase()
 
-	if err := env.Load(); err != nil {
+	if err := godotenv.Load(); err != nil {
 		log.Fatalf("Error loading .env file")
 	}
 
-	var PORT = env.Get("$PORT")
-
+	PORT := os.Getenv("PORT")
 	app := fiber.New()
 
 	app.Use(cors.New(cors.Config{
@@ -488,5 +488,5 @@ func main() {
 	api.Delete("/boards/:bid/tasks/:id", deleteTask)
 
 	// Start server
-	log.Fatal(app.Listen(PORT))
+	log.Fatal(app.Listen(":" + PORT))
 }
