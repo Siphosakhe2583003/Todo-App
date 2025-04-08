@@ -1,4 +1,5 @@
 import { Modal, Box, Typography, Button } from "@mui/material";
+import { PropTypes } from "prop-types";
 
 export default function Popup({ open, onClose, message, runOnClose }) {
   function handleClose() {
@@ -36,3 +37,10 @@ export default function Popup({ open, onClose, message, runOnClose }) {
     </Modal>
   );
 }
+
+Popup.propTypes = {
+  open: PropTypes.bool.isRequired,
+  onClose: PropTypes.func.isRequired,
+  message: PropTypes.string.isRequired,
+  runOnClose: PropTypes.func.isRequired,
+};
