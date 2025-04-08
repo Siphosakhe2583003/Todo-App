@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
-import { getAuth, onAuthStateChanged } from "firebase/auth";
-import { fetchBoards, getBoardTasks, postTasks, changeCategory, saveBoard, createNewBoard, deleteBoardByID } from "./utils.js";
-import { toast, ToastContainer } from "react-toastify";
+import { getAuth, onAuthStateChanged } from "firebase/auth"; import { fetchBoards, getBoardTasks, postTasks, changeCategory, saveBoard, createNewBoard, deleteBoardByID } from "./utils.js";
+// import { toast, ToastContainer } from "react-toastify";
 import { IconButton } from "@mui/material";
 import Delete from "@mui/icons-material/Delete"
 import AddIcon from "@mui/icons-material/AddCircleOutline";
@@ -30,12 +29,12 @@ export default function Body() {
   const [message, setMessage] = useState("")
   const [popupFunction, setPopupFunction] = useState(() => () => null);
   const [refresh, setRefresh] = useState(false);
-  const priorityColors = {
-    HIGH: "high-color",
-    MEDIUM: "medium-color",
-    LOW: "low-color",
-  };
-
+  // const priorityColors = {
+  //   HIGH: "high-color",
+  //   MEDIUM: "medium-color",
+  //   LOW: "low-color",
+  // };
+  //
 
   useEffect(() => {
     setIsLoading(true)
@@ -358,7 +357,7 @@ export default function Body() {
 
         <AddTask open={openModal} onClose={closeAddTask} addTask={addTask} />
         <Loader isLoading={isLoading} />
-        <ToastContainer />
+        {/* <ToastContainer /> */}
         <Popup open={confirmPopup} onClose={() => setConfirmPopup(false)} message={message} runOnClose={popupFunction} />
       </div>
     </>
