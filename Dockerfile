@@ -12,6 +12,8 @@ RUN go mod download
 # Copy the entire project into the container
 COPY . .
 
+EXPOSE 8080
+
 # Run the main application
 CMD ["go", "run", "main.go"]
 
