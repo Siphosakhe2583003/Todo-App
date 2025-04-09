@@ -25,7 +25,13 @@ var (
 
 func initFirebase() {
 	ctx := context.Background()
-	sa := option.WithCredentialsFile("serviceAccountKey.json")
+	
+	if os.Getenv("PROD") != "" {
+		sa := option.WithCredentialsFile("/secrets/serviceAccountKey.json")
+	} else {
+		sa := option.WithCredentialsFile("serviceAccountKey.json")
+	}
+	
 
 	app, err := firebase.NewApp(ctx, nil, sa)
 	if err != nil {
