@@ -1,0 +1,54 @@
+# This workflow uses actions that are not certified by GitHub.
+# They are provided by a third-party and are governed by
+# separate terms of service, privacy policy, and support
+# documentation.
+# ESLint is a tool for identifying and reporting on patterns
+# found in ECMAScript/JavaScript code.
+# More details at https://github.com/eslint/eslint
+# and https://eslint.org
+
+name: ESLint
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+  schedule:
+    - cron: '31 16 * * 6'
+
+jobs:
+  eslint:
+    name: Run ESLint scanning
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+      actions: read
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          cd client
+          npm ci
+
+      - name: Run ESLint
+        env:
+          SARIF_ESLINT_IGNORE_SUPPRESSED: "true"
+        run: |
+          cd client
+          npx eslint . --config eslint.config.js -o eslint-results.sarif
+
+      - name: Check ESLint Output and formatting the ESLint Output
+        run: |
+          cd client
+          cat eslint-results.sarif || echo "No ESLint SARIF output generated"
+          npx eslint . -f @microsoft/eslint-formatter-sarif -o eslint-results.sarif
+          
+      - name: Upload analysis results to GitHub
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: client/eslint-results.sarif
+          wait-for-processing: true
