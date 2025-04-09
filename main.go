@@ -486,5 +486,5 @@ func main() {
 	api.Delete("/boards/:bid/tasks/:id", deleteTask)
 
 	// Start server
-	log.Fatal(app.Listen(":" + PORT))
+	log.Fatal(app.Listen("0.0.0.0:" + PORT))
 }
