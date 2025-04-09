@@ -1,12 +1,12 @@
 import { Modal, Box, Typography, Button } from "@mui/material";
 import { PropTypes } from "prop-types";
-
 export default function Popup({ open, onClose, message, runOnClose }) {
   function handleClose() {
     console.log(typeof runOnClose)
     runOnClose()
     onClose();
   }
+
   return (
     <Modal open={open} onClose={onClose} aria-labelledby="popup-title">
       <Box
