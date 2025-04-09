@@ -14,6 +14,7 @@ import (
 	"firebase.google.com/go/auth"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
+	"github.com/joho/godotenv"
 	"google.golang.org/api/option"
 )
 
@@ -21,21 +22,23 @@ var (
 	firebaseApp *firebase.App
 	firestoreDB *firestore.Client
 	authClient  *auth.Client
+	app         *firebase.App
+	err         error
+	keylocation string
 )
 
 func initFirebase() {
 	ctx := context.Background()
-	
-	if os.Getenv("PROD") != "" {
-		sa := option.WithCredentialsFile("/secrets/serviceAccountKey.json")
-	} else {
-		sa := option.WithCredentialsFile("serviceAccountKey.json")
-	}
-	
+	env := os.Getenv("ENV")
+	keylocation := os.Getenv("KEY_LOCATION")
 
-	app, err := firebase.NewApp(ctx, nil, sa)
-	if err != nil {
-		log.Fatalf("Error initializing Firebase: %v", err)
+	switch env {
+	case "dev":
+		app, err = firebase.NewApp(ctx, nil, option.WithCredentialsFile(keylocation))
+	case "prod":
+		app, err = firebase.NewApp(ctx, nil, option.WithCredentialsFile(keylocation))
+	default:
+		log.Fatal("ENV not set properly (must be 'dev' or 'prod')")
 	}
 
 	firestoreDB, err = app.Firestore(ctx)
@@ -453,6 +456,10 @@ func deleteTask(c *fiber.Ctx) error {
 }
 
 func main() {
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatalf("Error loading .env file")
+	}
 	initFirebase()
 
 	PORT := os.Getenv("PORT")

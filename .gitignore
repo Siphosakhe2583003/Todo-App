@@ -5,6 +5,8 @@ node_modules
 *.a
 *.so
 .env
+.main
+main
 
 _obj
 _test
