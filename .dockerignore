@@ -24,3 +24,8 @@ client/
 .git/
 .gitignore
 
+client/
+.dockerignore
+Dockerfile
+node_modules/
+*.log

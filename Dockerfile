@@ -1,7 +1,6 @@
 FROM golang:1.23.5-alpine
 
-ENV PORT 3000
-ENV HOST 0.0.0.0
+ENV PORT=8080
 
 # Set the working directory inside the container
 WORKDIR /app
