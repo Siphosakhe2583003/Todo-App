@@ -14,7 +14,6 @@ import (
 	"firebase.google.com/go/auth"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
-	"github.com/joho/godotenv"
 	"google.golang.org/api/option"
 )
 
@@ -450,11 +449,10 @@ func deleteTask(c *fiber.Ctx) error {
 func main() {
 	initFirebase()
 
-	if err := godotenv.Load(); err != nil {
-		log.Fatalf("Error loading .env file")
-	}
-
 	PORT := os.Getenv("PORT")
+	if PORT == "" {
+		PORT = "8080"
+	}
 	app := fiber.New()
 
 	app.Use(cors.New(cors.Config{
