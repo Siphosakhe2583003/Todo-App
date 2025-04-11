@@ -22,16 +22,7 @@ var (
 	firebaseApp *firebase.App
 	firestoreDB *firestore.Client
 	authClient  *auth.Client
-	app         *firebase.App
-	err         error
-	keylocation string
 )
-
-func toJSON(v interface{}) string {
-	b, _ := json.Marshal(v)
-	log.Print(string(b))
-	return string(b)
-}
 
 func initFirebase() {
 	ctx := context.Background()
@@ -40,21 +31,24 @@ func initFirebase() {
 	var opt option.ClientOption
 
 	if env == "prod" {
-		cred := map[string]interface{}{
-			"type":                        "service_account",
-			"project_id":                  os.Getenv("FIREBASE_PROJECT_ID"),
-			"private_key_id":              os.Getenv("FIREBASE_PRIVATE_KEY_ID"),
-			"private_key":                 os.Getenv("FIREBASE_PRIVATE_KEY"),
-			"client_email":                os.Getenv("FIREBASE_CLIENT_EMAIL"),
-			"client_id":                   os.Getenv("FIREBASE_CLIENT_ID"),
-			"auth_uri":                    "https://accounts.google.com/o/oauth2/auth",
-			"token_uri":                   "https://oauth2.googleapis.com/token",
+		privateKey := os.Getenv("FIREBASE_PRIVATE_KEY")
+		privateKey = strings.ReplaceAll(privateKey, `\n`, "\n") // decode escaped newlines
+		log.Print(privatekey)
+		creds := []byte(`{
+			"type": "service_account",
+			"project_id": "` + os.Getenv("FIREBASE_PROJECT_ID") + `",
+			"private_key_id": "` + os.Getenv("FIREBASE_PRIVATE_KEY_ID") + `",
+			"private_key": "` + privateKey + `",
+			"client_email": "` + os.Getenv("FIREBASE_CLIENT_EMAIL") + `",
+			"client_id": "` + os.Getenv("FIREBASE_CLIENT_ID") + `",
+			"auth_uri": "https://accounts.google.com/o/oauth2/auth",
+			"token_uri": "https://oauth2.googleapis.com/token",
 			"auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
-			"client_x509_cert_url":        os.Getenv("FIREBASE_CLIENT_CERT_URL"),
-			"universe_domain":             "googleapis.com",
-		}
-		log.Print(cred)
-		opt = option.WithCredentialsJSON([]byte(toJSON(cred)))
+			"client_x509_cert_url": "` + os.Getenv("FIREBASE_CLIENT_CERT_URL") + `",
+			"universe_domain": "googleapis.com"
+		}`)
+		log.Print(creds)
+		opt = option.WithCredentialsJSON(creds)
 	} else {
 		opt = option.WithCredentialsFile("serviceAccountKey.json") // local dev
 	}
