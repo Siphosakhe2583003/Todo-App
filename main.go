@@ -33,8 +33,10 @@ func initFirebase() {
 
 	if env == "prod" {
 		privateKey := os.Getenv("FIREBASE_PRIVATE_KEY")
+		log.Print(privateKey)
 		privateKey = strings.ReplaceAll(privateKey, `\n`, "\n") // decode escaped newlines
 		log.Print(privateKey)
+
 		creds := `{
 			"type": "service_account",
 			"project_id": "` + os.Getenv("FIREBASE_PROJECT_ID") + `",
@@ -48,26 +50,25 @@ func initFirebase() {
 			"client_x509_cert_url": "` + os.Getenv("FIREBASE_CLIENT_CERT_URL") + `",
 			"universe_domain": "googleapis.com"
 		}`
-
 		log.Print(creds)
-		opt := option.WithCredentialsJSON([]byte(creds))
+		opt = option.WithCredentialsJSON([]byte(creds)) // ❗️fixed: removed variable shadowing
 	} else {
 		opt = option.WithCredentialsFile("serviceAccountKey.json") // local dev
 	}
 
 	app, err := firebase.NewApp(ctx, nil, opt)
 	if err != nil {
-		log.Fatalf("Failed to initialize Firebase: %v", err)
+		log.Fatalf("❌ Failed to initialize Firebase: %v", err)
 	}
 
 	firestoreDB, err = app.Firestore(ctx)
 	if err != nil {
-		log.Fatalf("Error initializing Firestore: %v", err)
+		log.Fatalf("❌ Error initializing Firestore: %v", err)
 	}
 
 	authClient, err = app.Auth(ctx)
 	if err != nil {
-		log.Fatalf("Error initializing Auth: %v", err)
+		log.Fatalf("❌ Error initializing Auth: %v", err)
 	}
 
 	firebaseApp = app
