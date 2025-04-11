@@ -7,8 +7,8 @@ import (
 	"log"
 	"math"
 	"os"
-	"time"
 	"strings"
+	"time"
 
 	"cloud.google.com/go/firestore"
 	firebase "firebase.google.com/go"
@@ -28,6 +28,8 @@ var (
 func initFirebase() {
 	ctx := context.Background()
 	env := os.Getenv("ENV")
+
+	fmt.Print(env)
 
 	var opt option.ClientOption
 
