@@ -56,8 +56,8 @@ This was *the* project that taught me how to:
 - 🎨 More polish on drag-and-drop UX  
 - 🪓 Clean up error handling (aka make logs less of a horror show)  
 - 🧼 Refactor the code that I wrote at 2am
-- 📱 *Might* make it responsive on mobile (not likely but I might do it)
-- ⌨️ Add VIM mode so that I could use it with just the keyboard (I use *NEOVIM* btw)
+- 📱 **Might** make it responsive on mobile (not likely, but hey, it could happen)
+- ⌨️ Add VIM mode so that I could use it with just the keyboard (I use **NEOVIM** btw)
 
 ---
 
