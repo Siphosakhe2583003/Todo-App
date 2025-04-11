@@ -35,7 +35,7 @@ func initFirebase() {
 		privateKey := os.Getenv("FIREBASE_PRIVATE_KEY")
 		privateKey = strings.ReplaceAll(privateKey, `\n`, "\n") // decode escaped newlines
 		log.Print(privateKey)
-		creds := []byte(`{
+		creds := `{
 			"type": "service_account",
 			"project_id": "` + os.Getenv("FIREBASE_PROJECT_ID") + `",
 			"private_key_id": "` + os.Getenv("FIREBASE_PRIVATE_KEY_ID") + `",
@@ -47,9 +47,10 @@ func initFirebase() {
 			"auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
 			"client_x509_cert_url": "` + os.Getenv("FIREBASE_CLIENT_CERT_URL") + `",
 			"universe_domain": "googleapis.com"
-		}`)
+		}`
+
 		log.Print(creds)
-		opt = option.WithCredentialsJSON(creds)
+		opt := option.WithCredentialsJSON([]byte(creds))
 	} else {
 		opt = option.WithCredentialsFile("serviceAccountKey.json") // local dev
 	}
