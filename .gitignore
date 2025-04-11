@@ -21,5 +21,6 @@ tmp/
 /client/src/config.js
 /client/.env
 /client/dist/
+/dist
 
 serviceAccountKey.json
