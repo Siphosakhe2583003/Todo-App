@@ -52,7 +52,7 @@ func initFirebase() {
 			"client_x509_cert_url":        os.Getenv("FIREBASE_CLIENT_CERT_URL"),
 			"universe_domain":             "googleapis.com",
 		}
-
+		log.Print(cred)
 		opt = option.WithCredentialsJSON([]byte(toJSON(cred)))
 	} else {
 		opt = option.WithCredentialsFile("serviceAccountKey.json") // local dev
