@@ -34,7 +34,7 @@ func initFirebase() {
 	if env == "prod" {
 		privateKey := os.Getenv("FIREBASE_PRIVATE_KEY")
 		privateKey = strings.ReplaceAll(privateKey, `\n`, "\n") // decode escaped newlines
-		log.Print(privatekey)
+		log.Print(privateKey)
 		creds := []byte(`{
 			"type": "service_account",
 			"project_id": "` + os.Getenv("FIREBASE_PROJECT_ID") + `",
