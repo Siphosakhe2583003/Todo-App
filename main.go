@@ -7,7 +7,7 @@ import (
 	"log"
 	"math"
 	"os"
-	"strings"
+	// "strings"
 	"time"
 
 	"cloud.google.com/go/firestore"
@@ -36,24 +36,27 @@ func initFirebase() {
 	if env == "prod" {
 		privateKey := os.Getenv("FIREBASE_PRIVATE_KEY")
 		log.Print(privateKey)
-		privateKey = strings.ReplaceAll(privateKey, `\n`, "\n") // decode escaped newlines
-		log.Print(privateKey)
 
-		creds := `{
-			"type": "service_account",
-			"project_id": "` + os.Getenv("FIREBASE_PROJECT_ID") + `",
-			"private_key_id": "` + os.Getenv("FIREBASE_PRIVATE_KEY_ID") + `",
-			"private_key": "` + privateKey + `",
-			"client_email": "` + os.Getenv("FIREBASE_CLIENT_EMAIL") + `",
-			"client_id": "` + os.Getenv("FIREBASE_CLIENT_ID") + `",
-			"auth_uri": "https://accounts.google.com/o/oauth2/auth",
-			"token_uri": "https://oauth2.googleapis.com/token",
+		creds := map[string]interface{}{
+			"type":                        "service_account",
+			"project_id":                  os.Getenv("FIREBASE_PROJECT_ID"),
+			"private_key_id":              os.Getenv("FIREBASE_PRIVATE_KEY_ID"),
+			"private_key":                 privateKey,
+			"client_email":                os.Getenv("FIREBASE_CLIENT_EMAIL"),
+			"client_id":                   os.Getenv("FIREBASE_CLIENT_ID"),
+			"auth_uri":                    "https://accounts.google.com/o/oauth2/auth",
+			"token_uri":                   "https://oauth2.googleapis.com/token",
 			"auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
-			"client_x509_cert_url": "` + os.Getenv("FIREBASE_CLIENT_CERT_URL") + `",
-			"universe_domain": "googleapis.com"
-		}`
+			"client_x509_cert_url":        os.Getenv("FIREBASE_CLIENT_CERT_URL"),
+			"universe_domain":             "googleapis.com",
+		}
 		log.Print(creds)
-		opt = option.WithCredentialsJSON([]byte(creds)) // ❗️fixed: removed variable shadowing
+		credsJSON, err := json.Marshal(creds)
+		log.Print(credsJSON)
+		if err != nil {
+			log.Fatalf("❌ Failed to marshal Firebase credentials: %v", err)
+		}
+		opt = option.WithCredentialsJSON(credsJSON)
 	} else {
 		opt = option.WithCredentialsFile("serviceAccountKey.json") // local dev
 	}
