@@ -47,7 +47,7 @@ This was *the* project that taught me how to:
 - Over-engineer a side project because it’s fun
 - Wasting time on a silly project
 - DEVOPS (Setting up GCP is a chore and I'll never use it again)
-- Caching(Redis) and Rate limiting (Protection against DDoS because some people are just board(See what I did there)
+- Caching(Redis) and Rate limiting for protection against DDoS because some people are just board(See what I did there)
 
 ---
 
