@@ -1,7 +1,6 @@
-# Start from the official Go base image
-FROM golang:1.23.5 as builder
+# Stage 1: Build the Go binary
+FROM golang:1.23.5 AS builder
 
-# Set the working directory
 WORKDIR /app
 
 # Copy go mod and sum files
@@ -16,20 +15,22 @@ COPY . .
 # Build the Go binary
 RUN go build -o server .
 
-# Use a lightweight final image
-FROM debian:bullseye-slim
+# Stage 2: Use a modern slim image with newer GLIBC
+FROM debian:bookworm-slim
 
-# Set working directory
 WORKDIR /app
 
-# Copy the binary from builder stage
+# Install required libraries (just in case)
+RUN apt-get update && apt-get install -y ca-certificates && apt-get clean
+
+# Copy the compiled Go binary
 COPY --from=builder /app/server .
 
-# Expose port (optional, but good practice)
+# Expose the port the app runs on
 EXPOSE 8080
 
-# Set environment variable so Go knows to run in production mode
+# Set environment variable for production mode (optional)
 ENV GIN_MODE=release
 
-# Command to run the executable
+# Run the app
 CMD ["./server"]
