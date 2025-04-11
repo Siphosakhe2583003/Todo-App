@@ -29,6 +29,7 @@ var (
 
 func toJSON(v interface{}) string {
 	b, _ := json.Marshal(v)
+	log.Print(string(b))
 	return string(b)
 }
 
