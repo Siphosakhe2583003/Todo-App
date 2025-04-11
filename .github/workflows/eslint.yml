@@ -14,8 +14,11 @@ on:
     branches: [ "main" ]
   pull_request:
     branches: [ "main" ]
+  paths:
+    - 'client/**'
   schedule:
     - cron: '31 16 * * 6'
+  
 
 jobs:
   eslint:
