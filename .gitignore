@@ -7,6 +7,9 @@ node_modules
 .env
 .main
 main
+encoded.txt
+text
+package*.json
 
 _obj
 _test
