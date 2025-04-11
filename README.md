@@ -80,5 +80,4 @@ At least this way I get to pretend I’m building something “scalable” while
 ---
 
 ## 🧃 How to Run It Locally
-
-# YOU CAN'T (WELL FOR NOW NOT YET)
+**YOU CAN'T (WELL FOR NOW )**
