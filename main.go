@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -25,6 +26,23 @@ var (
 	authClient  *auth.Client
 )
 
+func decodeServiceAccount(encodedKey string) map[string]interface{} {
+	// Decode the base64-encoded JSON string
+	decodedBytes, err := base64.StdEncoding.DecodeString(encodedKey)
+	if err != nil {
+		log.Fatalf("❌ Failed to decode base64 string: %v", err)
+	}
+
+	// Unmarshal JSON into a generic map
+	var serviceAccount map[string]interface{}
+	err = json.Unmarshal(decodedBytes, &serviceAccount)
+	if err != nil {
+		log.Fatalf("❌ Failed to unmarshal service account JSON: %v", err)
+	}
+
+	return serviceAccount
+}
+
 func initFirebase() {
 	ctx := context.Background()
 	env := os.Getenv("ENV")
@@ -34,25 +52,28 @@ func initFirebase() {
 	var opt option.ClientOption
 
 	if env == "prod" {
-		privateKey := os.Getenv("FIREBASE_PRIVATE_KEY")
-		log.Print(privateKey)
-
-		creds := map[string]interface{}{
-			"type":                        "service_account",
-			"project_id":                  os.Getenv("FIREBASE_PROJECT_ID"),
-			"private_key_id":              os.Getenv("FIREBASE_PRIVATE_KEY_ID"),
-			"private_key":                 privateKey,
-			"client_email":                os.Getenv("FIREBASE_CLIENT_EMAIL"),
-			"client_id":                   os.Getenv("FIREBASE_CLIENT_ID"),
-			"auth_uri":                    "https://accounts.google.com/o/oauth2/auth",
-			"token_uri":                   "https://oauth2.googleapis.com/token",
-			"auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
-			"client_x509_cert_url":        os.Getenv("FIREBASE_CLIENT_CERT_URL"),
-			"universe_domain":             "googleapis.com",
-		}
+		// privateKey := os.Getenv("FIREBASE_PRIVATE_KEY")
+		// log.Print(privateKey)
+		//
+		// creds := map[string]interface{}{
+		// 	"type":                        "service_account",
+		// 	"project_id":                  os.Getenv("FIREBASE_PROJECT_ID"),
+		// 	"private_key_id":              os.Getenv("FIREBASE_PRIVATE_KEY_ID"),
+		// 	"private_key":                 privateKey,
+		// 	"client_email":                os.Getenv("FIREBASE_CLIENT_EMAIL"),
+		// 	"client_id":                   os.Getenv("FIREBASE_CLIENT_ID"),
+		// 	"auth_uri":                    "https://accounts.google.com/o/oauth2/auth",
+		// 	"token_uri":                   "https://oauth2.googleapis.com/token",
+		// 	"auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+		// 	"client_x509_cert_url":        os.Getenv("FIREBASE_CLIENT_CERT_URL"),
+		// 	"universe_domain":             "googleapis.com",
+		// }
+		encodedKey := os.Getenv("FIREBASE_SECRETS_JSON")
+		log.Print(encodedKey)
+		creds := decodeServiceAccount(encodedKey)
 		log.Print(creds)
-		credsJSON, err := json.Marshal(creds)
-		log.Print(credsJSON)
+		credsJSON, err := json.Marshal(creds) // convert back to JSON bytes if needed
+		opt = option.WithCredentialsJSON(credsJSON)
 		if err != nil {
 			log.Fatalf("❌ Failed to marshal Firebase credentials: %v", err)
 		}
