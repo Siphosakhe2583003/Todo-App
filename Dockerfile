@@ -1,25 +1,35 @@
-FROM golang:1.23.5-alpine
+# Start from the official Go base image
+FROM golang:1.23.5 as builder
 
-ENV PORT=8080
-ENV HOST=0.0.0.0
-
-RUN apk add --no-cache git
-
-# Set the working directory inside the container
+# Set the working directory
 WORKDIR /app
 
-# Copy go mod and download deps
-COPY go.* ./
+# Copy go mod and sum files
+COPY go.mod go.sum ./
+
+# Download dependencies
 RUN go mod download
 
-# Copy the rest of the code
+# Copy the source code
 COPY . .
 
-# Build the Go app
-RUN go build -o main .
+# Build the Go binary
+RUN go build -o server .
 
-# Expose the port
+# Use a lightweight final image
+FROM debian:bullseye-slim
+
+# Set working directory
+WORKDIR /app
+
+# Copy the binary from builder stage
+COPY --from=builder /app/server .
+
+# Expose port (optional, but good practice)
 EXPOSE 8080
 
-# Run the binary
-CMD ["./main"]
+# Set environment variable so Go knows to run in production mode
+ENV GIN_MODE=release
+
+# Command to run the executable
+CMD ["./server"]

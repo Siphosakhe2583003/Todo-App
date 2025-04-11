@@ -27,18 +27,40 @@ var (
 	keylocation string
 )
 
+func toJSON(v interface{}) string {
+	b, _ := json.Marshal(v)
+	return string(b)
+}
+
 func initFirebase() {
 	ctx := context.Background()
 	env := os.Getenv("ENV")
-	keylocation := os.Getenv("KEY_LOCATION")
 
-	switch env {
-	case "dev":
-		app, err = firebase.NewApp(ctx, nil, option.WithCredentialsFile(keylocation))
-	case "prod":
-		app, err = firebase.NewApp(ctx, nil, option.WithCredentialsFile(keylocation))
-	default:
-		log.Fatal("ENV not set properly (must be 'dev' or 'prod')")
+	var opt option.ClientOption
+
+	if env == "prod" {
+		cred := map[string]interface{}{
+			"type":                        "service_account",
+			"project_id":                  os.Getenv("FIREBASE_PROJECT_ID"),
+			"private_key_id":              os.Getenv("FIREBASE_PRIVATE_KEY_ID"),
+			"private_key":                 os.Getenv("FIREBASE_PRIVATE_KEY"),
+			"client_email":                os.Getenv("FIREBASE_CLIENT_EMAIL"),
+			"client_id":                   os.Getenv("FIREBASE_CLIENT_ID"),
+			"auth_uri":                    "https://accounts.google.com/o/oauth2/auth",
+			"token_uri":                   "https://oauth2.googleapis.com/token",
+			"auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+			"client_x509_cert_url":        os.Getenv("FIREBASE_CLIENT_CERT_URL"),
+			"universe_domain":             "googleapis.com",
+		}
+
+		opt = option.WithCredentialsJSON([]byte(toJSON(cred)))
+	} else {
+		opt = option.WithCredentialsFile("serviceAccountKey.json") // local dev
+	}
+
+	app, err := firebase.NewApp(ctx, nil, opt)
+	if err != nil {
+		log.Fatalf("Failed to initialize Firebase: %v", err)
 	}
 
 	firestoreDB, err = app.Firestore(ctx)
@@ -315,7 +337,7 @@ func addTask(c *fiber.Ctx) error {
 
 	var task struct {
 		Content  string `json:"content"`
-		Type     string `json:"type"`     // "Todo", "Doing", "Done"
+		Type     string `json:"type"`     // "Todo", "Doing", "Completed"
 		Priority string `json:"priority"` // "Low", "Medium", "High"
 	}
 	if err := json.Unmarshal(c.Body(), &task); err != nil {
@@ -458,8 +480,9 @@ func deleteTask(c *fiber.Ctx) error {
 func main() {
 	err := godotenv.Load()
 	if err != nil {
-		log.Fatalf("Error loading .env file")
+		log.Print("Error loading .env file")
 	}
+	log.Print("Starting server...")
 	initFirebase()
 
 	PORT := os.Getenv("PORT")
