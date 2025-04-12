@@ -18,10 +18,11 @@ Funny how side projects do that to you, huh?
 
 ## 🛠️ Built With:
 
-- 🧠 **Go (Fiber)** — for the backend logic, APIs, and Firebase JWT magic  
-- ⚛️ **React(I used javascript and I regret it) + CSS** — because I “accidentally” spent too much time styling stuff  
-- 🔐 **Firebase Auth + Firestore** — because I’m not building my own auth flow (again)  
-- 🐳 **Docker + Google Cloud Run** — because it’s 2025 and we deploy in style  
+- 🧠 **Go (Fiber)** — Handles all the backend logic, APIs, and the "boring but important" stuff.  
+- ⚛️ **React (yes... plain JavaScript) + CSS** — I skipped Tailwind because *"ITS USELESS"* That said, I’ll give it a proper try before I roast it completely.  
+- 🔐 **Firebase Auth + Firestore** — Easy setup for auth and DB… until you realize Firebase Hosting doesn’t support real env vars. Thanks, Google. Real secure.  
+- 🐳 **Docker + Google Cloud Run** — Docker? Love it. Cloud Run? Tried it so you don’t have to. Let’s just say it’s not my favorite GCP service and leave it at that.
+
 
 ---
 
