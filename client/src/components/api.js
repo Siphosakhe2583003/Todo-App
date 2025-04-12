@@ -1,7 +1,7 @@
 const URL = import.meta.env.VITE_API_URL;
 
 async function createSession(idToken) {
-  const res = await fetch(`${URL}/`, {
+  const res = await fetch(`${URL}/auth`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -17,7 +17,7 @@ async function createSession(idToken) {
 
 async function fetchBoards() {
   try {
-    const res = await fetch(`${URL}/boards`, {
+    const res = await fetch(`${URL}/api/boards`, {
       method: "GET",
       credentials: "include",
     });
@@ -34,7 +34,7 @@ async function fetchBoards() {
 
 async function fetchLastUsedBoard() {
   try {
-    const res = await fetch(`${URL}/`, {
+    const res = await fetch(`${URL}/api/`, {
       method: "GET",
       credentials: "include",
     })
@@ -51,7 +51,7 @@ async function fetchLastUsedBoard() {
 
 async function fetchBoard(id) {
   try {
-    const res = await fetch(`${URL}/boards/${id}`, {
+    const res = await fetch(`${URL}/api/boards/${id}`, {
       method: "GET",
       credentials: "include",
     })
@@ -68,7 +68,7 @@ async function fetchBoard(id) {
 
 async function getBoardTasks(id) {
   try {
-    const res = await fetch(`${URL}/boards/${id}/tasks`, {
+    const res = await fetch(`${URL}/api/boards/${id}/tasks`, {
       method: "GET",
       credentials: "include",
     })
@@ -87,7 +87,7 @@ async function getBoardTasks(id) {
 
 async function postTasks(task, id) {
   try {
-    const res = await fetch(`${URL}/boards/${id}/tasks`, {
+    const res = await fetch(`${URL}/api/boards/${id}/tasks`, {
       method: "POST",
       credentials: "include",
       body: JSON.stringify(task)
@@ -106,7 +106,7 @@ async function postTasks(task, id) {
 
 async function changeCategory(taskId, boardId, category) {
   try {
-    const res = await fetch(`${URL}/boards/${boardId}/tasks/${taskId}/type`, {
+    const res = await fetch(`${URL}/api/boards/${boardId}/tasks/${taskId}/type`, {
       method: "PUT",
       credentials: "include",
       body: JSON.stringify({ "type": category })
@@ -125,7 +125,7 @@ async function changeCategory(taskId, boardId, category) {
 
 async function updateTaskContent(taskId, boardId, content, newPriority) {
   try {
-    const res = await fetch(`${URL}/boards/${boardId}/tasks/${taskId}`, {
+    const res = await fetch(`${URL}/api/boards/${boardId}/tasks/${taskId}`, {
       method: "PUT",
       credentials: "include",
       body: JSON.stringify({
@@ -147,7 +147,7 @@ async function updateTaskContent(taskId, boardId, content, newPriority) {
 
 async function removeTask(taskId, boardId) {
   try {
-    const res = await fetch(`${URL}/boards/${boardId}/tasks/${taskId}`, {
+    const res = await fetch(`${URL}/api/boards/${boardId}/tasks/${taskId}`, {
       method: "DELETE",
       credentials: "include",
     })
@@ -163,7 +163,7 @@ async function removeTask(taskId, boardId) {
 async function deleteBoardByID(boardId) {
   try {
 
-    const res = await fetch(`${URL}/boards/${boardId}`, {
+    const res = await fetch(`${URL}/api/boards/${boardId}`, {
       method: "DELETE",
       credentials: "include",
     })
@@ -178,7 +178,7 @@ async function deleteBoardByID(boardId) {
 
 async function saveBoard(boardId, newBoardName) {
   try {
-    const res = await fetch(`${URL}/boards/${boardId}`, {
+    const res = await fetch(`${URL}/api/boards/${boardId}`, {
       method: "PUT",
       credentials: "include",
       body: JSON.stringify({ "name": newBoardName })
@@ -197,7 +197,7 @@ async function saveBoard(boardId, newBoardName) {
 
 async function createNewBoard() {
   try {
-    const res = await fetch(`${URL}/boards`, {
+    const res = await fetch(`${URL}/api/boards`, {
       method: "POST",
       credentials: "include",
       body: JSON.stringify({ name: "" })

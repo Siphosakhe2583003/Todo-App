@@ -28,7 +28,6 @@ export default function Header({ board, setBoard, setPrevBoardName, myBoards, se
         // Send the ID token to your backend for verification and to create a session
         createSession(idToken);
 
-
       } else {
         setUser(null);
       }
