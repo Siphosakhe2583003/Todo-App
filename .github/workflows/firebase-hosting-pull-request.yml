@@ -13,6 +13,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
+      - name: 🧪 Create .env file from Secrets
+        run: echo "${{ secrets.VITE_ENV_FILE }}" > .env
+        working-directory: client
+
       - run: npm ci
       - run: npm run build
       - uses: FirebaseExtended/action-hosting-deploy@v0

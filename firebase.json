@@ -1,6 +1,7 @@
 {
   "hosting": {
     "source": "client",
+    "site": "go-do",
     "ignore": [
       "firebase.json",
       "**/.*",
