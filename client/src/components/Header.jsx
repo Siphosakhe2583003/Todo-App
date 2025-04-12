@@ -12,6 +12,7 @@ import { IconButton, Divider } from "@mui/material";
 import { Menu } from "@mui/icons-material";
 import Sidebar from "./Sidebar.jsx";
 import GoogleLogo from "./GoogleLogo.jsx";
+import { createSession } from "./api.js";
 
 const auth = getAuth();
 
@@ -24,15 +25,10 @@ export default function Header({ board, setBoard, setPrevBoardName, myBoards, se
         setUser(user);
         const idToken = await user.getIdToken();
 
-        await fetch("http://localhost:3000/auth", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          credentials: "include",
-          body: JSON.stringify({ idToken }),
-        });
-        console.log("User logged in", user);
+        // Send the ID token to your backend for verification and to create a session
+        createSession(idToken);
+
+
       } else {
         setUser(null);
       }

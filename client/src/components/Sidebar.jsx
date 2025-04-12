@@ -19,7 +19,7 @@ import ExpandLess from "@mui/icons-material/ExpandLess";
 import ExpandMore from "@mui/icons-material/ExpandMore";
 import DashboardIcon from "@mui/icons-material/Dashboard";
 import { PropTypes } from "prop-types";
-import { createNewBoard, fetchBoard } from "./utils.js";
+import { createNewBoard, fetchBoard } from "./api.js";
 
 
 export default function Sidebar({ open, setSidebar, board, setBoard, setPrevBoardName, myBoards, setMyBoards, setIsLoading }) {
@@ -49,7 +49,7 @@ export default function Sidebar({ open, setSidebar, board, setBoard, setPrevBoar
       setMyBoards(prevBoards => ([...prevBoards, { id: status.id, name: "" }]))
     }
     catch (error) {
-      console.log(error)
+      console.error(error)
       setBoard(tempBoard)
       setMyBoards(prevBoards => prevBoards.slice(0, prevBoards.length - 1))
     }

@@ -1,5 +1,20 @@
 const URL = import.meta.env.VITE_API_URL;
 
+async function createSession(idToken) {
+  const res = await fetch("http://localhost:3000/auth", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    credentials: "include",
+    body: JSON.stringify({ idToken }),
+  });
+  if (!res.ok) {
+    throw new Error(`Error ${res.status}: ${res.statusText}`);
+  }
+}
+
+
 async function fetchBoards() {
   try {
     const res = await fetch(`${URL}/boards`, {
@@ -60,7 +75,7 @@ async function getBoardTasks(id) {
     if (!res.ok) {
       throw new Error(`Error ${res.status}: ${res.statusText}`)
     }
-    console.log(res)
+
     return await res.json()
   }
   catch (error) {
@@ -78,7 +93,7 @@ async function postTasks(task, id) {
       body: JSON.stringify(task)
     })
     if (!res.ok) {
-      console.log(res)
+
       throw new Error(`Error ${res.status}: ${res}`)
     }
     return await res.json()
@@ -97,7 +112,7 @@ async function changeCategory(taskId, boardId, category) {
       body: JSON.stringify({ "type": category })
     })
     if (!res.ok) {
-      console.log(res)
+
       throw new Error(`Error ${res.status}: ${res}`)
     }
     return await res.json()
@@ -119,7 +134,7 @@ async function updateTaskContent(taskId, boardId, content, newPriority) {
       })
     })
     if (!res.ok) {
-      console.log(res)
+
       throw new Error(`Error ${res.status}: ${res}`)
     }
     return await res.json()
@@ -147,7 +162,7 @@ async function removeTask(taskId, boardId) {
 
 async function deleteBoardByID(boardId) {
   try {
-    console.log(boardId, "bid at fetch")
+
     const res = await fetch(`${URL}/boards/${boardId}`, {
       method: "DELETE",
       credentials: "include",
@@ -169,7 +184,7 @@ async function saveBoard(boardId, newBoardName) {
       body: JSON.stringify({ "name": newBoardName })
     })
     if (!res.ok) {
-      console.log(res)
+
       throw new Error(`Error ${res.status}: ${res}`)
     }
     return await res.json()
@@ -188,7 +203,7 @@ async function createNewBoard() {
       body: JSON.stringify({ name: "" })
     })
     if (!res.ok) {
-      console.log(res)
+
       throw new Error(`Error ${res.status}: ${res}`)
     }
     return await res.json()
@@ -199,4 +214,4 @@ async function createNewBoard() {
   return null
 }
 
-export { deleteBoardByID, fetchBoards, fetchLastUsedBoard, getBoardTasks, postTasks, changeCategory, updateTaskContent, removeTask, saveBoard, createNewBoard, fetchBoard }
+export { createSession, deleteBoardByID, fetchBoards, fetchLastUsedBoard, getBoardTasks, postTasks, changeCategory, updateTaskContent, removeTask, saveBoard, createNewBoard, fetchBoard }

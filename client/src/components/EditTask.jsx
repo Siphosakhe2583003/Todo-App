@@ -33,7 +33,7 @@ export default function EditTask({ open, onClose, editTask, content, priority })
 
   const handlePriority = (e) => {
     setTaskPriority(e.target.value);
-    console.log(taskPriority)
+
   }
 
   const save = () => {

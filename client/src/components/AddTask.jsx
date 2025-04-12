@@ -14,10 +14,10 @@ export default function AddTask({ open, onClose, addTask }) {
     LOW: "low-color",
   };
   const callbackRef = useCallback(inputElement => {
-    console.log(inputElement)
+
     if (inputElement) {
       setTimeout(() => inputElement.focus(), 20);
-      console.log("theres an element")
+
     }
   }, []);
   const handleUpdate = (e) => {

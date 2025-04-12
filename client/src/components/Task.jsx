@@ -1,6 +1,6 @@
 import { useState, } from 'react';
 import { IconButton } from '@mui/material';
-import { updateTaskContent, removeTask } from "./utils.js";
+import { updateTaskContent, removeTask } from "./api.js";
 import { PropTypes } from "prop-types";
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';

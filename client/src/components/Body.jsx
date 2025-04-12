@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { getAuth, onAuthStateChanged } from "firebase/auth"; import { fetchBoards, getBoardTasks, postTasks, changeCategory, saveBoard, createNewBoard, deleteBoardByID } from "./utils.js";
+import { getAuth, onAuthStateChanged } from "firebase/auth"; import { fetchBoards, getBoardTasks, postTasks, changeCategory, saveBoard, createNewBoard, deleteBoardByID } from "./api.js";
 // import { toast, ToastContainer } from "react-toastify";
 import { IconButton } from "@mui/material";
 import Delete from "@mui/icons-material/Delete"
@@ -261,7 +261,7 @@ export default function Body() {
       setRefresh(prev => !prev)
     }
     catch (error) {
-      console.log(error)
+      console.error(error)
     }
   }
 
@@ -323,9 +323,9 @@ export default function Body() {
               onDrop={(e) => handleOnDrop(e, category)}
               onDragOver={(e) => handleDragOver(e, category)}
               onDragLeave={() => setCategoryState({ "Todo": false, "Doing": false, "Completed": false })}
-              style={{ backgroundColor: categoryState[category] ? "var(--tertiary-color)" : "", transition: "background-color 0.1s", opacity: categoryState[category] ? 0.7 : 1 }}
+              style={{ backgroundColor: categoryState[category] ? "var(--tertiary-color)" : "", transition: "background-color", opacity: categoryState[category] ? 0.7 : 1 }}
             >
-              <div className="field-header" style={{ backgroundColor: categoryState[category] ? "var(--tertiary-color)" : "", transition: "background-color 0.1s", opacity: categoryState[category] ? 0.7 : 1 }}>
+              <div className="field-header" style={{ backgroundColor: categoryState[category] ? "var(--tertiary-color)" : "", transition: "background-color", opacity: categoryState[category] ? 0.7 : 1 }}>
                 <h3>{category.toUpperCase()}</h3>
                 <IconButton className="add-button" onClick={() => toggleAddTask(category)}>
                   <AddIcon sx={{ color: "var(--tertiary-color)" }} />
