@@ -1,7 +1,7 @@
 const URL = import.meta.env.VITE_API_URL;
 
 async function createSession(idToken) {
-  const res = await fetch("http://localhost:3000/auth", {
+  const res = await fetch(`${URL}/`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
