@@ -66,7 +66,7 @@ This was *the* project that taught me how to:
 
 > “Should’ve just built a terminal app.” — me, repeatedly, with increasing regret.
 
-I mean… a TUI *would* have taught me a lot — probably the same Go stuff, maybe even a bit of Docker magic too.  
+I mean… a TUI *would* have taught me a lot — probably the same Go stuff 
 But let’s be real: I was always gonna be the only one using it.  
 (That still holds true for this one, by the way.)
 
