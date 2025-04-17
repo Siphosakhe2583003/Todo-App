@@ -80,6 +80,8 @@
   background: var(--secondary-color);
   overflow: hidden;
   border-radius: 20px;
+  margin: 0;
+  border: 2px solid var(--primary-color);
   height: fit-content;
 }
 

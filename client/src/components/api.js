@@ -104,12 +104,12 @@ async function postTasks(task, id) {
   return null
 }
 
-async function changeCategory(taskId, boardId, category) {
+async function changeCategory(taskId, boardId, category, position) {
   try {
     const res = await fetch(`${URL}/api/boards/${boardId}/tasks/${taskId}/type`, {
       method: "PUT",
       credentials: "include",
-      body: JSON.stringify({ "type": category })
+      body: JSON.stringify({ "type": category, "pos": position, })
     })
     if (!res.ok) {
 
@@ -118,7 +118,7 @@ async function changeCategory(taskId, boardId, category) {
     return await res.json()
   }
   catch (error) {
-    console.error(error.message)
+    console.error(error.message, error)
   }
   return null
 }

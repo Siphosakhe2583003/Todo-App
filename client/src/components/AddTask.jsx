@@ -3,7 +3,7 @@ import { PropTypes } from "prop-types"
 import { FormControl, Modal, Box, Button, TextField, IconButton, InputLabel, MenuItem, Select } from "@mui/material";
 import CancelIcon from "@mui/icons-material/Cancel"
 
-export default function AddTask({ open, onClose, addTask }) {
+export default function AddTask({ open, onClose, addTask, taskCategory }) {
   const [taskText, setTaskText] = useState("");
   const [taskPriority, setTaskPriority] = useState("LOW");
   const [count, setCount] = useState(taskText.length)
@@ -34,7 +34,14 @@ export default function AddTask({ open, onClose, addTask }) {
 
   const save = () => {
     if (taskText.trim() === "") return;
-    addTask(taskText, taskPriority);
+    let taskPos = 0;
+    for (let task of Object.values(taskText)) {
+      if (task.pos > taskPos && task.type === taskCategory) {
+        taskPos = task.pos
+      }
+    }
+    taskPos += 10000
+    addTask(taskText, taskPriority, taskPos, taskCategory);
     setTaskText(""); // Clear input after saving
     setCount(0);
     onClose();
@@ -120,4 +127,5 @@ AddTask.propTypes = {
   open: PropTypes.bool.isRequired,
   onClose: PropTypes.func.isRequired,
   addTask: PropTypes.func.isRequired,
+  taskCategory: PropTypes.string.isRequired,
 };
