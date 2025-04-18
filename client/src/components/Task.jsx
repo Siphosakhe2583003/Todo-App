@@ -129,7 +129,7 @@ export default function Task({ id, task, handleOnDrag, board, setBoard, setMessa
         borderRadius: "8px",
         transition: "background 0.3s",
         whiteSpace: "pre-wrap",
-        display: isDragged ? "none" : "flow",
+        // display: isDragged ? "none" : "flow",
         //background: isDragged ? `${priorityColors[board.tasks[id].priority]}` : "var(--primary-color)",
       }}
     >
