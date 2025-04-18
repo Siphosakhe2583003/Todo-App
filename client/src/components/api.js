@@ -75,7 +75,6 @@ async function getBoardTasks(id) {
     if (!res.ok) {
       throw new Error(`Error ${res.status}: ${res.statusText}`)
     }
-
     return await res.json()
   }
   catch (error) {
@@ -104,21 +103,20 @@ async function postTasks(task, id) {
   return null
 }
 
-async function changeCategory(taskId, boardId, category) {
+async function changeCategory(taskId, boardId, category, position) {
   try {
     const res = await fetch(`${URL}/api/boards/${boardId}/tasks/${taskId}/type`, {
       method: "PUT",
       credentials: "include",
-      body: JSON.stringify({ "type": category })
+      body: JSON.stringify({ "type": category, "pos": position, })
     })
     if (!res.ok) {
-
       throw new Error(`Error ${res.status}: ${res}`)
     }
     return await res.json()
   }
   catch (error) {
-    console.error(error.message)
+    console.error(error.message, error)
   }
   return null
 }
@@ -162,8 +160,7 @@ async function removeTask(taskId, boardId) {
 
 async function deleteBoardByID(boardId) {
   try {
-
-    const res = await fetch(`${URL}/api/boards/${boardId}`, {
+    const res = await fetch(`${URL}/boards/${boardId}`, {
       method: "DELETE",
       credentials: "include",
     })
@@ -184,7 +181,6 @@ async function saveBoard(boardId, newBoardName) {
       body: JSON.stringify({ "name": newBoardName })
     })
     if (!res.ok) {
-
       throw new Error(`Error ${res.status}: ${res}`)
     }
     return await res.json()
@@ -203,7 +199,6 @@ async function createNewBoard() {
       body: JSON.stringify({ name: "" })
     })
     if (!res.ok) {
-
       throw new Error(`Error ${res.status}: ${res}`)
     }
     return await res.json()

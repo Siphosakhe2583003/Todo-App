@@ -6,7 +6,8 @@ import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditTask from './EditTask';
 
-export default function Task({ id, task, handleOnDrag, type, board, setBoard, setMessage, setPopupFunction, setConfirmPopup }) {
+export default function Task({ id, task, handleOnDrag, board, setBoard, setMessage, setPopupFunction, setConfirmPopup, handleOnDrop, category }) {
+
   const [isHovered, setIsHovered] = useState(false);
   const [openModal, setOpenModal] = useState(false);
   const [isDragged, setIsDragged] = useState(false);
@@ -15,8 +16,7 @@ export default function Task({ id, task, handleOnDrag, type, board, setBoard, se
   const formatText = (text) => {
     let formattedText = text
       .replace(/\*(.*?)\*/g, "<b>$1</b>") // *bold*
-      .replace(/_(.*?)_/g, "<i>$1</i>") // _italic_
-      .replace(/~(.*?)~/g, "<s>$1</s>"); // ~strikethrough~
+      .replace(/_(.*?)_/g, "<i>$1</i>") // _italic_ .replace(/~(.*?)~/g, "<s>$1</s>"); // ~strikethrough~
 
     return formattedText.replace(/\n/g, "<br/>");
   };
@@ -99,15 +99,25 @@ export default function Task({ id, task, handleOnDrag, type, board, setBoard, se
       }));
     }
   }
+
   function handleDrag(e) {
-    handleOnDrag(e, type, task)
+    handleOnDrag(e)
     setIsDragged(true)
   }
+
+  function handleDrop(e) {
+    console.log("the id of the target below the selected task", e.target)
+    handleOnDrop(e, category, e.target.id)
+  }
+
   return (
     <div
       className="task"
       key={id}
+      id={id}
       draggable
+      onDrop={handleDrop}
+      // onDragOver={handleDraggingOverTask}
       onDragStart={handleDrag}
       onDragEnd={() => setIsDragged(false)}
       onMouseEnter={() => setIsHovered(true)}
@@ -119,15 +129,17 @@ export default function Task({ id, task, handleOnDrag, type, board, setBoard, se
         borderRadius: "8px",
         transition: "background 0.3s",
         whiteSpace: "pre-wrap",
+        // display: isDragged ? "none" : "flow",
         //background: isDragged ? `${priorityColors[board.tasks[id].priority]}` : "var(--primary-color)",
       }}
     >
       <div
+        id={id}
         dangerouslySetInnerHTML={{ __html: formatText(task) }}
         style={{ whiteSpace: "pre-wrap", color: "white" }}
       />
 
-      <div className="priority-tag" style={{ color: priorityColors[board.tasks[id].priority] }}>
+      <div className="priority-tag" id={id} style={{ color: priorityColors[board.tasks[id].priority] }}>
         {board.tasks[id].priority} PRIORITY
       </div>
 
@@ -180,5 +192,7 @@ Task.propTypes = {
   setMessage: PropTypes.func.isRequired,
   setPopupFunction: PropTypes.func.isRequired,
   setConfirmPopup: PropTypes.func.isRequired,
+  handleOnDrop: PropTypes.func.isRequired,
+  category: PropTypes.string.isRequired,
 };
 

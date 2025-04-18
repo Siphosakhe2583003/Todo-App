@@ -27,7 +27,6 @@ var (
 )
 
 func decodeServiceAccount(encodedKey string) map[string]interface{} {
-	// Decode the base64-encoded JSON string
 	decodedBytes, err := base64.StdEncoding.DecodeString(encodedKey)
 	if err != nil {
 		log.Fatalf("❌ Failed to decode base64 string: %v", err)
@@ -52,22 +51,6 @@ func initFirebase() {
 	var opt option.ClientOption
 
 	if env == "prod" {
-		// privateKey := os.Getenv("FIREBASE_PRIVATE_KEY")
-		// log.Print(privateKey)
-		//
-		// creds := map[string]interface{}{
-		// 	"type":                        "service_account",
-		// 	"project_id":                  os.Getenv("FIREBASE_PROJECT_ID"),
-		// 	"private_key_id":              os.Getenv("FIREBASE_PRIVATE_KEY_ID"),
-		// 	"private_key":                 privateKey,
-		// 	"client_email":                os.Getenv("FIREBASE_CLIENT_EMAIL"),
-		// 	"client_id":                   os.Getenv("FIREBASE_CLIENT_ID"),
-		// 	"auth_uri":                    "https://accounts.google.com/o/oauth2/auth",
-		// 	"token_uri":                   "https://oauth2.googleapis.com/token",
-		// 	"auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
-		// 	"client_x509_cert_url":        os.Getenv("FIREBASE_CLIENT_CERT_URL"),
-		// 	"universe_domain":             "googleapis.com",
-		// }
 		encodedKey := os.Getenv("FIREBASE_SECRETS_JSON")
 		log.Print(encodedKey)
 		creds := decodeServiceAccount(encodedKey)
@@ -360,9 +343,10 @@ func addTask(c *fiber.Ctx) error {
 	ctx := context.Background()
 
 	var task struct {
-		Content  string `json:"content"`
-		Type     string `json:"type"`     // "Todo", "Doing", "Completed"
-		Priority string `json:"priority"` // "Low", "Medium", "High"
+		Content  string  `json:"content"`
+		Type     string  `json:"type"`     // "Todo", "Doing", "Completed"
+		Priority string  `json:"priority"` // "Low", "Medium", "High"
+		Pos      float64 `json:"pos"`
 	}
 	if err := json.Unmarshal(c.Body(), &task); err != nil {
 		return c.Status(400).SendString("Invalid request body")
@@ -382,6 +366,7 @@ func addTask(c *fiber.Ctx) error {
 		"type":      task.Type,
 		"priority":  task.Priority,
 		"createdAt": time.Now(),
+		"pos":       task.Pos,
 	}
 	docRef, _, err := firestoreDB.Collection("users").Doc(uid).Collection("boards").Doc(boardID).Collection("tasks").Add(ctx, formatedTask)
 	if err != nil {
@@ -454,7 +439,8 @@ func editTaskType(c *fiber.Ctx) error {
 	bid := c.Params("bid")
 	ctx := context.Background()
 	var task struct {
-		Type string `json:"type"`
+		Type string  `json:"type"`
+		Pos  float64 `json:"pos"`
 	}
 	if err := json.Unmarshal(c.Body(), &task); err != nil {
 		return c.Status(400).SendString("Invalid request body")
@@ -466,6 +452,7 @@ func editTaskType(c *fiber.Ctx) error {
 	}
 	_, err = docRef.Update(ctx, []firestore.Update{
 		{Path: "type", Value: task.Type},
+		{Path: "pos", Value: task.Pos},
 	})
 	if err != nil {
 		return c.Status(500).SendString("Error updating task")

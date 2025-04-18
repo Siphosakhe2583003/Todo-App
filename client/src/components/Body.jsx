@@ -29,12 +29,6 @@ export default function Body() {
   const [message, setMessage] = useState("")
   const [popupFunction, setPopupFunction] = useState(() => () => null);
   const [refresh, setRefresh] = useState(false);
-  // const priorityColors = {
-  //   HIGH: "high-color",
-  //   MEDIUM: "medium-color",
-  //   LOW: "low-color",
-  // };
-  //
 
   useEffect(() => {
     setIsLoading(true)
@@ -114,8 +108,7 @@ export default function Body() {
           console.error("Failed to change board name");
           setBoard(prevBoard => ({ ...prevBoard, boardName: prevBoardName }));
           return;
-        }
-        // Updating the name of the board in the boards list, WHY? I am avoiding to fetch the boards again
+        } // Updating the name of the board in the boards list, WHY? I am avoiding to fetch the boards again
         for (let board of myBoards) {
           if (board.id === boardId) {
             board.name = newName;
@@ -138,16 +131,17 @@ export default function Body() {
     setOpenModal(false);
   }
 
-  const addTask = async (content, taskPriority) => {
+  const addTask = async (content, taskPriority, position, taskCategory) => {
     const tempId = Date.now().toString();
 
     const task = {
       content: content,
-      type: selectedCategory,
+      type: taskCategory,
       priority: taskPriority,
+      pos: position,
     };
 
-    // Optimistically update the UI
+    // NOTE: Optimistically update the UI
     setBoard((prevBoard) => {
       return {
         ...prevBoard,
@@ -200,25 +194,33 @@ export default function Body() {
     }));
   }
 
-  async function handleOnDrop(e, dropCategory) {
+  async function handleOnDrop(e, dropCategory, taskBelowId) {
     setCategoryState({ "Todo": false, "Doing": false, "Completed": false })
     const taskId = e.dataTransfer.getData("taskId");
     const task = board.tasks[taskId];
+    const taskBelow = board.tasks[taskBelowId];
+    let topPos = 0
 
-    if (!taskId) return;
+    if (task.pos === taskBelow.pos) return;
 
-    if (task.type === dropCategory) return;
+    for (let currTask of Object.values(board.tasks)) {
+      if (currTask.pos < taskBelow.pos && currTask.type === dropCategory) {
+        topPos = currTask.pos
+      }
+    }
+
+    const currPos = (taskBelow.pos + topPos) / 2
 
     setBoard((prevBoard) => ({
       ...prevBoard,
       tasks: {
         ...prevBoard.tasks,
-        [taskId]: { ...prevBoard.tasks[taskId], type: dropCategory },
+        [taskId]: { ...prevBoard.tasks[taskId], type: dropCategory, pos: currPos },
       },
     }));
 
     try {
-      const data = await changeCategory(taskId, board.id, dropCategory);
+      const data = await changeCategory(taskId, board.id, dropCategory, currPos);
 
       if (!data) {
         throw new Error("Board or task doesn't exist");
@@ -230,7 +232,7 @@ export default function Body() {
         ...prevBoard,
         tasks: {
           ...prevBoard.tasks,
-          [taskId]: { ...prevBoard.tasks[taskId], type: task.type }, // Revert to original type
+          [taskId]: { ...prevBoard.tasks[taskId], type: task.type, pos: task.pos }, // Revert to original type
         },
       }));
 
@@ -246,10 +248,13 @@ export default function Body() {
       ...Object.fromEntries(Object.keys(prev).map((key) => [key, false])), // Reset all to false
       [category]: true, // Set the current category to true
     }));
+    // console.log("dragging over", category, e)
   }
 
   function handleOnDrag(e, taskId) {
     e.dataTransfer.setData("taskId", taskId);
+
+    console.log("dragging event", e.target)
   }
 
   async function deleteBoard() {
@@ -320,12 +325,12 @@ export default function Body() {
             <div
               key={category}
               className="field"
-              onDrop={(e) => handleOnDrop(e, category)}
+              // onDrop={(e) => handleOnDrop(e, category, taskBelowId)}
               onDragOver={(e) => handleDragOver(e, category)}
               onDragLeave={() => setCategoryState({ "Todo": false, "Doing": false, "Completed": false })}
-              style={{ backgroundColor: categoryState[category] ? "var(--tertiary-color)" : "", transition: "background-color", opacity: categoryState[category] ? 0.7 : 1 }}
+              style={{ border: categoryState[category] ? "2px solid var(--tertiary-color)" : "", opacity: categoryState[category] ? 0.7 : 1 }}
             >
-              <div className="field-header" style={{ backgroundColor: categoryState[category] ? "var(--tertiary-color)" : "", transition: "background-color", opacity: categoryState[category] ? 0.7 : 1 }}>
+              <div className="field-header" >
                 <h3>{category.toUpperCase()}</h3>
                 <IconButton className="add-button" onClick={() => toggleAddTask(category)}>
                   <AddIcon sx={{ color: "var(--tertiary-color)" }} />
@@ -334,11 +339,13 @@ export default function Body() {
               <div className="todos">
                 {Object.values(board.tasks)
                   .filter((task) => task.type === category && task.show !== false)
+                  .sort((a, b) => a.pos - b.pos)
                   .map((task) => (
                     <Task
                       className="tasks"
                       draggable
                       key={task.id}
+                      pos={task.pos}
                       id={task.id}
                       type={task.type}
                       task={task.content}
@@ -348,14 +355,17 @@ export default function Body() {
                       setPopupFunction={setPopupFunction}
                       setConfirmPopup={setConfirmPopup}
                       handleOnDrag={(e) => handleOnDrag(e, task.id)}
+                      handleOnDrop={handleOnDrop}
+                      category={category}
                     />
-                  ))}
+                  ))
+                }
               </div>
             </div>
           ))}
         </section>
 
-        <AddTask open={openModal} onClose={closeAddTask} addTask={addTask} />
+        <AddTask open={openModal} onClose={closeAddTask} addTask={addTask} taskCategory={selectedCategory} />
         <Loader isLoading={isLoading} />
         {/* <ToastContainer /> */}
         <Popup open={confirmPopup} onClose={() => setConfirmPopup(false)} message={message} runOnClose={popupFunction} />
