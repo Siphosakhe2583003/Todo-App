@@ -1,6 +1,9 @@
 import { useState, useEffect } from "react";
 import { getAuth, onAuthStateChanged } from "firebase/auth"; import { fetchBoards, getBoardTasks, postTasks, changeCategory, saveBoard, createNewBoard, deleteBoardByID } from "./api.js";
+
 // import { toast, ToastContainer } from "react-toastify";
+import { DragDropContext, Droppable } from "react-beautiful-dnd";
+
 import { IconButton } from "@mui/material";
 import Delete from "@mui/icons-material/Delete"
 import AddIcon from "@mui/icons-material/AddCircleOutline";
@@ -29,6 +32,8 @@ export default function Body() {
   const [message, setMessage] = useState("")
   const [popupFunction, setPopupFunction] = useState(() => () => null);
   const [refresh, setRefresh] = useState(false);
+  const [categoryState, setCategoryState] = useState({ "Todo": false, "Doing": false, "Completed": false })
+  const [renderDroppables, setRenderDroppables] = useState(false);
 
   useEffect(() => {
     setIsLoading(true)
@@ -80,12 +85,16 @@ export default function Body() {
         return acc;
       }, {});
 
-      setBoard({
+      const newBoardState = {
         id: latestUsedBoard.id,
         boardName: latestUsedBoard.name.trim() || "",
         tasks: formattedTasks || {},
-      });
+      }
+
+      setBoard(newBoardState);
+      setTimeout(() => setRenderDroppables(true), 0);
       setPrevBoardName(latestUsedBoard.name.trim() || "");
+      console.log(newBoardState)
     };
     setIsLoading(true);
     fetchMyBoards();
@@ -133,7 +142,6 @@ export default function Body() {
 
   const addTask = async (content, taskPriority, position, taskCategory) => {
     const tempId = Date.now().toString();
-
     const task = {
       content: content,
       type: taskCategory,
@@ -199,6 +207,7 @@ export default function Body() {
     const taskId = e.dataTransfer.getData("taskId");
     const task = board.tasks[taskId];
     const taskBelow = board.tasks[taskBelowId];
+    console.log(taskBelow)
     let topPos = 0
 
     if (task.pos === taskBelow.pos) return;
@@ -240,7 +249,6 @@ export default function Body() {
     }
   }
 
-  const [categoryState, setCategoryState] = useState({ "Todo": false, "Doing": false, "Completed": false })
 
   function handleDragOver(e, category) {
     e.preventDefault();
@@ -262,7 +270,7 @@ export default function Body() {
       const status = await deleteBoardByID(board.id)
       if (!status) throw new Error("deleting board failed"); // NOTE: Deleting failed
 
-      // NOTE: I am currently just refreshing the page if the user deletes the current page. In future I must just change the states of the board and boards and just fetch the last updated board after the deletion to avoid fetching the entire board, in fact since I have the entire board, it might be better to just delete the board from the board and just calculate the recently used board from there(but I am not tracking the last used board in the ui so that might cause some problems)
+      // NOTE: Hacky to refresh the page after deleting the current board
       setRefresh(prev => !prev)
     }
     catch (error) {
@@ -292,6 +300,19 @@ export default function Body() {
 
   };
 
+  const onDragEnd = (result) => {
+    const { destination, source, draggableId } = result;
+    if (!destination) {
+      return;
+    }
+    if (destination.droppableId === source.droppableId && destination.index === source.index) {
+      return;
+    }
+    const taskId = result.draggableId;
+    const task = board.tasks[taskId];
+    // Handle the drag and drop logic
+    // handleOnDrop(result, destination.droppableId, task.id);
+  }
   return (
     <>
       <Header board={board} setBoard={setBoard} setPrevBoardName={setPrevBoardName} myBoards={myBoards} setMyBoards={setMyBoards} setIsLoading={setIsLoading} />
@@ -301,7 +322,7 @@ export default function Body() {
             <input
               type="text"
               value={board.boardName}
-              placeholder="Enter Board Name"
+              placeholder="Board Name"
               onChange={(e) => addBoardName(e.target.value)}
               onBlur={() => setIsEditingBoardName(false)}
               id="board-name"
@@ -319,57 +340,64 @@ export default function Body() {
             onChange={handleSearch}
           />
         </div>
+        <div className="main-body">
 
-        <section className="main-body">
-          {["Todo", "Doing", "Completed"].map((category) => (
-            <div
-              key={category}
-              className="field"
-              // onDrop={(e) => handleOnDrop(e, category, taskBelowId)}
-              onDragOver={(e) => handleDragOver(e, category)}
-              onDragLeave={() => setCategoryState({ "Todo": false, "Doing": false, "Completed": false })}
-              style={{ border: categoryState[category] ? "2px solid var(--tertiary-color)" : "", opacity: categoryState[category] ? 0.7 : 1 }}
-            >
-              <div className="field-header" >
-                <h3>{category.toUpperCase()}</h3>
-                <IconButton className="add-button" onClick={() => toggleAddTask(category)}>
-                  <AddIcon sx={{ color: "var(--tertiary-color)" }} />
-                </IconButton>
+          <DragDropContext onDragEnd={onDragEnd}>
+            {renderDroppables ? (["Todo", "Doing", "Completed"].map((category) => (
+              <div
+                key={category}
+                className="field"
+                // onDragOver={(e) => handleDragOver(e, category)}
+                // onDragLeave={() => setCategoryState({ "Todo": false, "Doing": false, "Completed": false })}
+                style={{ border: categoryState[category] ? "2px solid var(--tertiary-color)" : "", opacity: categoryState[category] ? 0.7 : 1 }}
+              >
+                <div className="field-header" >
+                  <h3>{category.toUpperCase()}</h3>
+                  <IconButton className="add-button" onClick={() => toggleAddTask(category)}>
+                    <AddIcon sx={{ color: "var(--tertiary-color)" }} />
+                  </IconButton>
+                </div>
+                <Droppable droppableId={category} key={category} id={category} name={category}>
+                  {(provided) => (
+                    <div className="todos"
+                      ref={provided.innerRef}
+                      {...provided.droppableProps}
+                    >
+                      {Object.values(board.tasks)
+                        .filter((task) => task.type === category && task.show !== false)
+                        .map((task, index) => (
+                          <Task
+                            className="tasks"
+                            key={task.id}
+                            pos={task.pos}
+                            id={task.id}
+                            type={task.type}
+                            task={task.content}
+                            board={board}
+                            setBoard={setBoard}
+                            setMessage={setMessage}
+                            setPopupFunction={setPopupFunction}
+                            setConfirmPopup={setConfirmPopup}
+                            // handleOnDrag={(e) => handleOnDrag(e, task.id)}
+                            // handleOnDrop={handleOnDrop}
+                            index={index}
+                            category={category}
+                          />
+                        ))
+                      }
+                      {provided.placeholder}
+                    </div>
+                  )}
+                </Droppable>
               </div>
-              <div className="todos">
-                {Object.values(board.tasks)
-                  .filter((task) => task.type === category && task.show !== false)
-                  .sort((a, b) => a.pos - b.pos)
-                  .map((task) => (
-                    <Task
-                      className="tasks"
-                      draggable
-                      key={task.id}
-                      pos={task.pos}
-                      id={task.id}
-                      type={task.type}
-                      task={task.content}
-                      board={board}
-                      setBoard={setBoard}
-                      setMessage={setMessage}
-                      setPopupFunction={setPopupFunction}
-                      setConfirmPopup={setConfirmPopup}
-                      handleOnDrag={(e) => handleOnDrag(e, task.id)}
-                      handleOnDrop={handleOnDrop}
-                      category={category}
-                    />
-                  ))
-                }
-              </div>
-            </div>
-          ))}
-        </section>
-
+            ))) : null}
+          </DragDropContext >
+        </div>
         <AddTask open={openModal} onClose={closeAddTask} addTask={addTask} taskCategory={selectedCategory} />
         <Loader isLoading={isLoading} />
         {/* <ToastContainer /> */}
         <Popup open={confirmPopup} onClose={() => setConfirmPopup(false)} message={message} runOnClose={popupFunction} />
-      </div>
+      </div >
     </>
   );
 }

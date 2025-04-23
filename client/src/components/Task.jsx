@@ -1,12 +1,15 @@
 import { useState, } from 'react';
-import { IconButton } from '@mui/material';
 import { updateTaskContent, removeTask } from "./api.js";
+
+import { Draggable } from 'react-beautiful-dnd';
+
 import { PropTypes } from "prop-types";
+import { IconButton } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditTask from './EditTask';
 
-export default function Task({ id, task, handleOnDrag, board, setBoard, setMessage, setPopupFunction, setConfirmPopup, handleOnDrop, category }) {
+export default function Task({ id, task, handleOnDrag, board, setBoard, setMessage, setPopupFunction, setConfirmPopup, handleOnDrop, category, index }) {
 
   const [isHovered, setIsHovered] = useState(false);
   const [openModal, setOpenModal] = useState(false);
@@ -110,68 +113,87 @@ export default function Task({ id, task, handleOnDrag, board, setBoard, setMessa
     handleOnDrop(e, category, e.target.id)
   }
 
+
+
   return (
-    <div
-      className="task"
-      key={id}
-      id={id}
-      draggable
-      onDrop={handleDrop}
-      // onDragOver={handleDraggingOverTask}
-      onDragStart={handleDrag}
-      onDragEnd={() => setIsDragged(false)}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-      style={{
-        borderLeft: `5px solid ${priorityColors[board.tasks[id].priority]}`,
-        position: "relative",
-        padding: "10px",
-        borderRadius: "8px",
-        transition: "background 0.3s",
-        whiteSpace: "pre-wrap",
-        // display: isDragged ? "none" : "flow",
-        //background: isDragged ? `${priorityColors[board.tasks[id].priority]}` : "var(--primary-color)",
-      }}
-    >
-      <div
-        id={id}
-        dangerouslySetInnerHTML={{ __html: formatText(task) }}
-        style={{ whiteSpace: "pre-wrap", color: "white" }}
-      />
+    <Draggable draggableId={id} index={index}>
+      {(provided) => {
+        {/* console.log("task rdendered", id, task) */ }
+        return (
 
-      <div className="priority-tag" id={id} style={{ color: priorityColors[board.tasks[id].priority] }}>
-        {board.tasks[id].priority} PRIORITY
-      </div>
+          < div
+            {...provided.draggableProps}
+            {...provided.dragHandleProps}
+            ref={provided.innerRef}
+          >
+            <div
+              className="task"
+              key={id}
+              id={id}
+              // draggable
+              // onDrop={handleDrop}
+              // onDragOver={handleDraggingOverTask}
+              // onDragStart={handleDrag}
+              // onDragEnd={() => setIsDragged(false)}
+              onMouseEnter={() => setIsHovered(true)}
+              onMouseLeave={() => setIsHovered(false)}
+              style={{
+                borderLeft: `5px solid ${priorityColors[board.tasks[id].priority]}`,
+                position: "relative",
+                padding: "10px",
+                borderRadius: "8px",
+                transition: "background 0.3s",
+                whiteSpace: "pre-wrap",
+                ...provided.dragHandleProps.style,
+                // display: isDragged ? "none" : "flow",
+                //background: isDragged ? `${priorityColors[board.tasks[id].priority]}` : "var(--primary-color)",
+              }}
+            >
+              <div
+                id={id}
+                dangerouslySetInnerHTML={{ __html: formatText(task) }}
+                style={{ whiteSpace: "pre-wrap", color: "white" }}
+              />
 
-      <div
-        className="task-buttons"
-        style={{
-          position: "absolute",
-          right: "0px",
-          top: "50%",
-          transform: "translateY(-50%)",
-          display: (isHovered && !isDragged) ? "flex" : "none",
-          gap: "0px",
-          background: "var(--secondary-color)",
-          opacity: 0.95,
-          padding: "5px",
-          borderRadius: "5px"
-        }}
-        onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => setIsHovered(false)}
-      >
-        <IconButton onClick={() => setOpenModal(true)} size="small" sx={{ color: "white" }}>
-          <EditIcon fontSize="small" />
-        </IconButton>
-        <IconButton onClick={() => handleDeleteTask(id)} size="small" sx={{ color: "white" }}>
-          <DeleteIcon fontSize="small" sx={{ color: "red" }} />
-        </IconButton>
-      </div>
+              <div className="priority-tag" id={id} style={{ color: priorityColors[board.tasks[id].priority] }}>
+                {board.tasks[id].priority} PRIORITY
+              </div>
 
-      <EditTask open={openModal} onClose={closeModal} editTask={editTask} content={task} priority={board.tasks[id].priority} />
-    </div >
+              <div
+                className="task-buttons"
+                style={{
+                  position: "absolute",
+                  right: "0px",
+                  top: "50%",
+                  transform: "translateY(-50%)",
+                  display: (isHovered && !isDragged) ? "flex" : "none",
+                  gap: "0px",
+                  background: "var(--secondary-color)",
+                  opacity: 0.95,
+                  padding: "5px",
+                  borderRadius: "5px"
+                }}
+                onMouseEnter={() => setIsHovered(true)}
+                onMouseLeave={() => setIsHovered(false)}
+              >
+                <IconButton onClick={() => setOpenModal(true)} size="small" sx={{ color: "white" }}>
+                  <EditIcon fontSize="small" />
+                </IconButton>
+                <IconButton onClick={() => handleDeleteTask(id)} size="small" sx={{ color: "white" }}>
+                  <DeleteIcon fontSize="small" sx={{ color: "red" }} />
+                </IconButton>
+              </div>
+
+              <EditTask open={openModal} onClose={closeModal} editTask={editTask} content={task} priority={board.tasks[id].priority} />
+            </div >
+          </div>
+        )
+      }
+      }
+    </Draggable >
   );
 }
+
 
 Task.propTypes = {
   board: PropTypes.shape({
@@ -194,5 +216,6 @@ Task.propTypes = {
   setConfirmPopup: PropTypes.func.isRequired,
   handleOnDrop: PropTypes.func.isRequired,
   category: PropTypes.string.isRequired,
+  index: PropTypes.number,
 };
 

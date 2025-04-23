@@ -92,8 +92,8 @@ export default function Header({ board, setBoard, setPrevBoardName, myBoards, se
 }
 
 Header.propTypes = {
-  open: PropTypes.bool.isRequired,
-  setSidebar: PropTypes.func.isRequired,
+  open: PropTypes.bool,
+  setSidebar: PropTypes.func,
   board: PropTypes.shape({
     id: PropTypes.string.isRequired,
     boardName: PropTypes.string.isRequired,
